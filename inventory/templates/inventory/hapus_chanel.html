@@ -1,0 +1,47 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Hapus Toko | Rumah BUMN{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Hapus Toko / Chanel</h1>
+        <p>Konfirmasi penghapusan chanel {{ chanel.nama_toko }}.</p>
+    </div>
+    <div class="header-icon" style="background: #fde8e7; color: #c0392b;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="form-card" style="max-width: 600px; border-left: 4px solid #c0392b;">
+    <div class="section-header" style="margin-bottom: 20px;">
+        <div>
+            <h2>Konfirmasi Penghapusan</h2>
+            <p>Tindakan ini tidak dapat dibatalkan.</p>
+        </div>
+    </div>
+
+    <p style="font-size: 15px; margin-bottom: 12px; color: #26352d;">
+        Apakah Anda yakin ingin menghapus toko <strong>"{{ chanel.nama_toko }}"</strong>?
+    </p>
+
+    <div style="background: #fde8e7; color: #c0392b; padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 25px;">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        Perhatian: Seluruh data stok produk yang tercatat di toko ini juga akan ikut terhapus dari sistem.
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-danger">
+                <i class="fa-solid fa-trash"></i> Ya, Hapus Toko
+            </button>
+            <a href="{% url 'data_bazar' %}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Batal
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

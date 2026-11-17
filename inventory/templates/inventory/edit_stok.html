@@ -1,0 +1,63 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Edit Stok - {{ stok.produk.nama_produk }}{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Edit Stok Produk</h1>
+        <p>Perbarui jumlah persediaan stok kantor untuk produk {{ stok.produk.nama_produk }}.</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-pen-to-square"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <div class="section-header" style="margin-bottom: 20px;">
+        <div>
+            <h2>Form Edit Stok</h2>
+            <p>Sesuaikan jumlah fisik produk yang tersedia saat ini.</p>
+        </div>
+    </div>
+
+    <!-- INFORMASI PRODUK -->
+    <div style="background: #f7faf8; padding: 16px 20px; border-radius: 10px; margin-bottom: 25px; border-left: 4px solid #176b3a;">
+        <p style="margin-bottom: 6px;"><strong>Kode Produk:</strong> {{ stok.produk.kode_produk }}</p>
+        <p style="margin-bottom: 6px;"><strong>Nama Produk:</strong> {{ stok.produk.nama_produk }}</p>
+        <p style="margin-bottom: 6px;"><strong>UMKM:</strong> {{ stok.produk.umkm.nama|default:"-" }}</p>
+        <p style="margin-bottom: 0;"><strong>Stok Chanel:</strong> {{ stok.stok_chanel }} unit</p>
+    </div>
+
+    <!-- FORM -->
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="stok_kantor">Jumlah Stok Kantor *</label>
+            <input
+                type="number"
+                id="stok_kantor"
+                name="stok_kantor"
+                min="0"
+                value="{{ stok.stok_kantor }}"
+                required
+            >
+            <small style="color: #89958d; font-size: 12px; margin-top: 5px; display: block;">
+                Perubahan pada nilai ini akan otomatis tercatat di riwayat stok.
+            </small>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
+            </button>
+            <a href="{% url 'data_stok' %}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Batal
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

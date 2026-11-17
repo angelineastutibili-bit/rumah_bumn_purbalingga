@@ -1,0 +1,70 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Tambah Toko | Rumah BUMN{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Tambah Toko / Chanel</h1>
+        <p>Tambahkan toko mitra atau titik bazar baru untuk distribusi produk.</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-shop"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <div class="section-header" style="margin-bottom: 25px;">
+        <div>
+            <h2>Formulir Toko Baru</h2>
+            <p>Masukkan identitas dan lokasi toko.</p>
+        </div>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="nama_toko">Nama Toko / Chanel *</label>
+            <input
+                type="text"
+                id="nama_toko"
+                name="nama_toko"
+                placeholder="Contoh: Toko Oleh-oleh Berkah"
+                required
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="lokasi">Lokasi / Alamat</label>
+            <input
+                type="text"
+                id="lokasi"
+                name="lokasi"
+                placeholder="Contoh: Jl. Jenderal Soedirman No. 12"
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="keterangan">Keterangan Tambahan</label>
+            <textarea
+                id="keterangan"
+                name="keterangan"
+                rows="4"
+                placeholder="Catatan mengenai toko ini..."
+            ></textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Toko
+            </button>
+            <a href="{% url 'data_bazar' %}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Batal
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

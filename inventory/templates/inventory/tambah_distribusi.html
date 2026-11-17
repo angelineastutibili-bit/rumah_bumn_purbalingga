@@ -1,0 +1,305 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Tambah Distribusi{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Tambah Distribusi Stok</h1>
+        <p>Catat dan mutasikan stok barang antar lokasi (Kantor dan Chanel/Toko).</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-truck"></i>
+    </div>
+</div>
+
+<!-- CSS Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- Style Tambahan Agar Tampilan Rapi -->
+<style>
+    .select2-container .select2-selection--single {
+        height: 42px !important;
+        padding: 6px 12px;
+        border: 1px solid #d1d5db !important;
+        border-radius: 8px !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 28px !important;
+        color: #374151 !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px !important;
+    }
+</style>
+
+<!-- Library jQuery & Select2 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Mengaktifkan Fitur Pencarian Dropdown -->
+<script>
+    $(document).ready(function() {
+        $('select').select2({
+            width: '100%',
+            placeholder: "-- Pilih Data --",
+            allowClear: true
+        });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <div class="section-header" style="margin-bottom: 25px;">
+        <div>
+            <h2>Formulir Mutasi Distribusi Stok</h2>
+            <p>Pilih produk, lokasi asal, lokasi tujuan, dan jumlah unit yang akan didistribusikan.</p>
+        </div>
+    </div>
+
+    <form method="POST" id="formDistribusi">
+        {% csrf_token %}
+
+        <div class="form-grid">
+            <!-- PILIH PRODUK -->
+            <div class="form-group full-width">
+                <label for="produk">Produk yang Didistribusikan *</label>
+                <select name="produk" id="produk" class="form-control" required>
+                    <option value="">-- Pilih Produk --</option>
+                    {% for item in produk %}
+                    <option value="{{ item.id }}" data-kode="{{ item.kode_produk }}" data-nama="{{ item.nama_produk }}">
+                        {{ item.kode_produk }} - {{ item.nama_produk }} (Stok Kantor: {{ item.stok_kantor }} unit{% if item.umkm %} | UMKM: {{ item.umkm.nama }}{% endif %})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+        <!-- LOKASI ASAL -->
+<div class="form-group">
+    <label for="asal">
+        Lokasi Asal (Stok Berkurang) *
+    </label>
+
+    <select
+        name="asal"
+        id="asal"
+        class="form-control"
+        required
+    >
+        <option value="Kantor" selected>
+            Kantor Rumah BUMN (Pusat)
+        </option>
+    </select>
+
+    <!-- Informasi Sisa Stok -->
+    <div
+        id="stokAsalBadge"
+        style="
+            display: none;
+            margin-top: 8px;
+            padding: 9px 13px;
+            border-radius: 8px;
+            background: #e8f4ec;
+            color: #176b3a;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid #c8e6d0;
+        "
+    >
+        <i class="fa-solid fa-boxes-stacked"
+           style="margin-right: 5px;"></i>
+
+        Sisa Stok di Asal:
+
+        <span
+            id="stokAsalTersedia"
+            style="font-weight: 800; font-size: 15px;"
+        >0</span> unit
+    </div>
+</div>   
+            <!-- LOKASI TUJUAN -->
+            <div class="form-group">
+                <label for="tujuan">
+                    Lokasi Tujuan (Stok Bertambah) *
+                </label>
+
+                <select
+                    name="tujuan"
+                    id="tujuan"
+                    class="form-control"
+                    required
+                >
+                    <option value="">-- Pilih Lokasi Tujuan --</option>
+
+                    {% for toko in chanel %}
+                    <option value="chanel_{{ toko.id }}">
+                        {{ toko.nama_toko }} (Toko / Chanel)
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <div
+                    id="sameLocationWarning"
+                    style="display: none; color: #c0392b; font-size: 12px; font-weight: 600; margin-top: 6px;"
+                >
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    Lokasi asal dan lokasi tujuan tidak boleh sama!
+                </div>
+            </div>
+
+            <!-- JUMLAH DISTRIBUSI -->
+            <div class="form-group full-width">
+                <label for="jumlah">
+                    Jumlah Distribusi (Unit) *
+                </label>
+
+                <input
+                    type="number"
+                    name="jumlah"
+                    id="jumlah"
+                    class="form-control"
+                    min="1"
+                    placeholder="Contoh: 10"
+                    required
+                >
+
+                <div
+                    id="warningStok"
+                    style="display: none; color: #c0392b; font-size: 12px; font-weight: 600; margin-top: 6px;"
+                >
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    Peringatan: Jumlah melebihi stok kantor pusat!
+                </div>
+            </div>
+
+            <!-- KETERANGAN -->
+            <div class="form-group full-width">
+                <label for="keterangan">
+                    Keterangan / Catatan Pengiriman
+                </label>
+
+                <textarea
+                    name="keterangan"
+                    id="keterangan"
+                    class="form-control"
+                    rows="3"
+                    placeholder="Catatan pengiriman, no surat jalan, atau alasan mutasi..."
+                ></textarea>
+            </div>
+
+        </div>
+
+        <!-- TOMBOL SIMPAN DAN BATAL -->
+        <div class="form-actions">
+
+            <button
+                type="submit"
+                id="btnSubmitDistribusi"
+                class="btn btn-primary"
+            >
+                <i class="fa-solid fa-floppy-disk"></i>
+                Simpan Distribusi
+            </button>
+
+            <a
+                href="{% url 'data_distribusi' %}"
+                class="btn btn-secondary"
+            >
+                <i class="fa-solid fa-arrow-left"></i>
+                Batal
+            </a>
+
+        </div>
+
+    </form>
+</div>
+<!-- LIVE STOCK MATRIX & CLIENT-SIDE VALIDATION SCRIPT -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stokMatrix = {{ stok_matrix_json|safe|default:"{}" }};
+    const produkSelect = document.getElementById('produk');
+    const asalSelect = document.getElementById('asal');
+    const tujuanSelect = document.getElementById('tujuan');
+    const jumlahInput = document.getElementById('jumlah');
+    const stokAsalBadge = document.getElementById('stokAsalBadge');
+    const stokAsalTersedia = document.getElementById('stokAsalTersedia');
+    const warningStok = document.getElementById('warningStok');
+    const sameLocationWarning = document.getElementById('sameLocationWarning');
+    const form = document.getElementById('formDistribusi');
+
+    function getAvailableStock() {
+        const produkId = produkSelect.value;
+        const asalKey = asalSelect.value;
+        if (!produkId || !asalKey) return 0;
+        if (stokMatrix[produkId] && stokMatrix[produkId][asalKey] !== undefined) {
+            return stokMatrix[produkId][asalKey];
+        }
+        return 0;
+    }
+
+    function validateDistribusi() {
+        const produkId = produkSelect.value;
+        const asalVal = asalSelect.value;
+        const tujuanVal = tujuanSelect.value;
+        const inputJumlah = parseInt(jumlahInput.value || '0', 10);
+
+        // 1. Cek kesamaan lokasi
+        if (asalVal && tujuanVal && asalVal === tujuanVal) {
+            sameLocationWarning.style.display = 'block';
+            tujuanSelect.style.borderColor = '#c0392b';
+        } else {
+            sameLocationWarning.style.display = 'none';
+            tujuanSelect.style.borderColor = '';
+        }
+
+        // 2. Cek stok tersedia di lokasi asal
+        if (produkId && asalVal) {
+            const avail = getAvailableStock();
+            stokAsalTersedia.textContent = avail;
+            stokAsalBadge.style.display = 'block';
+
+            if (inputJumlah > avail) {
+                warningStok.style.display = 'block';
+                warningStok.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> Peringatan: Jumlah (${inputJumlah} unit) melebihi stok yang tersedia di lokasi asal (${avail} unit)!`;
+                jumlahInput.style.borderColor = '#c0392b';
+                jumlahInput.style.boxShadow = '0 0 0 3px rgba(192, 57, 43, 0.15)';
+            } else {
+                warningStok.style.display = 'none';
+                jumlahInput.style.borderColor = '';
+                jumlahInput.style.boxShadow = '';
+            }
+        } else {
+            stokAsalBadge.style.display = 'none';
+            warningStok.style.display = 'none';
+        }
+    }
+
+    produkSelect.addEventListener('change', validateDistribusi);
+    
+    tujuanSelect.addEventListener('change', validateDistribusi);
+    jumlahInput.addEventListener('input', validateDistribusi);
+    validateDistribusi();
+
+    form.addEventListener('submit', function(e) {
+        const asalVal = asalSelect.value;
+        const tujuanVal = tujuanSelect.value;
+        if (asalVal === tujuanVal) {
+            e.preventDefault();
+            alert("Lokasi asal dan lokasi tujuan tidak boleh sama.");
+            tujuanSelect.focus();
+            return false;
+        }
+
+        const avail = getAvailableStock();
+        const inputJumlah = parseInt(jumlahInput.value || '0', 10);
+        if (inputJumlah > avail) {
+            e.preventDefault();
+            alert(`Stok di lokasi asal tidak mencukupi! Tersedia: ${avail} unit, diminta: ${inputJumlah} unit.`);
+            jumlahInput.focus();
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}

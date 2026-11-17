@@ -1,0 +1,70 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Edit Distribusi #{{ distribusi.id }}{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Edit Riwayat Distribusi</h1>
+        <p>Sesuaikan jumlah pengiriman barang ke {{ distribusi.chanel.nama_toko|default:distribusi.tujuan }}.</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-truck"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <div class="section-header" style="margin-bottom: 20px;">
+        <div>
+            <h2>Form Penyesuaian Distribusi</h2>
+            <p>Perubahan jumlah akan otomatis menyesuaikan kembali stok kantor dan stok chanel tujuan.</p>
+        </div>
+    </div>
+
+    <!-- INFO DISTRIBUSI -->
+    <div style="background: #f7faf8; padding: 16px 20px; border-radius: 10px; margin-bottom: 25px; border-left: 4px solid #176b3a;">
+        <p style="margin-bottom: 6px;"><strong>Tanggal:</strong> {{ distribusi.tanggal|date:"d/m/Y H:i" }}</p>
+        <p style="margin-bottom: 6px;"><strong>Produk:</strong> {{ distribusi.produk.kode_produk }} &ndash; {{ distribusi.produk.nama_produk }}</p>
+        <p style="margin-bottom: 0;"><strong>Tujuan:</strong> {{ distribusi.chanel.nama_toko|default:distribusi.tujuan }}</p>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="jumlah">Jumlah Distribusi Baru *</label>
+            <input
+                type="number"
+                id="jumlah"
+                name="jumlah"
+                min="1"
+                value="{{ distribusi.jumlah }}"
+                required
+            >
+            <small style="color: #89958d; font-size: 12px; margin-top: 5px; display: block;">
+                Jumlah lama: {{ distribusi.jumlah }} unit.
+            </small>
+        </div>
+
+        <div class="form-group">
+            <label for="keterangan">Keterangan</label>
+            <textarea
+                id="keterangan"
+                name="keterangan"
+                rows="3"
+            >{{ distribusi.keterangan|default:'' }}</textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Penyesuaian
+            </button>
+            <a href="{% url 'data_distribusi' %}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Batal
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Distribusi Stok{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Distribusi Stok</h1>
+        <p>Catat dan pantau perpindahan stok produk ke berbagai chanel toko.</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-truck"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="section">
+    <div class="section-header">
+        <form method="GET" class="search-form">
+            <input
+                type="text"
+                name="q"
+                class="search-input"
+                placeholder="Cari produk, kode, chanel..."
+                value="{{ query }}"
+            >
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+            {% if query %}
+            <a href="{% url 'data_distribusi' %}" class="btn btn-secondary" title="Reset">
+                <i class="fa-solid fa-xmark"></i>
+            </a>
+            {% endif %}
+        </form>
+
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <a href="{% url 'tambah_distribusi' %}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Tambah Distribusi
+            </a>
+            <a href="{% url 'ekspor_csv' 'distribusi' %}" class="btn-export">
+                <i class="fa-solid fa-file-csv"></i> Ekspor CSV
+            </a>
+            <button type="button" class="btn btn-hapus-semua" onclick="bukaModalHapusSemua('{% url 'hapus_semua_data' 'distribusi' %}', 'Data Distribusi', {{ distribusi|length }})">
+                <i class="fa-solid fa-trash-can"></i> Hapus Semua Data
+            </button>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Tanggal</th>
+                    <th>Kode Produk</th>
+                    <th>Nama Produk</th>
+                    <th>Jumlah</th>
+                    <th>Asal</th>
+                    <th>Tujuan</th>
+                    <th>Keterangan</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in distribusi %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.tanggal|date:"d/m/Y H:i" }}</td>
+                    <td><strong>{{ item.produk.kode_produk }}</strong></td>
+                    <td>{{ item.produk.nama_produk }}</td>
+                    <td><span class="badge badge-info">{{ item.jumlah }} unit</span></td>
+                    <td><strong>{{ item.asal|default:"Kantor" }}</strong></td>
+                    <td><strong>{{ item.chanel.nama_toko|default:item.tujuan }}</strong></td>
+                    <td>{{ item.keterangan|default:"-" }}</td>
+                    <td>
+                        <div class="aksi">
+                            <a href="{% url 'edit_distribusi' item.id %}" class="btn-edit" title="Edit">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            <a href="{% url 'hapus_distribusi' item.id %}" class="btn-hapus" title="Hapus" onclick="return confirm('Yakin ingin membatalkan distribusi ini? Stok akan dikembalikan ke lokasi asal ({{ item.asal|default:"Kantor" }}).');">
+                                <i class="fa-solid fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="empty">
+                        <i class="fa-solid fa-truck"></i>
+                        Belum ada riwayat distribusi stok.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Hapus Stok - {{ stok.produk.nama_produk }}{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Hapus Stok Produk</h1>
+        <p>Konfirmasi penghapusan stok produk dari toko</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-trash"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .confirm-card {
+        background: white;
+        border: 2px solid #fde8e7;
+        border-radius: 14px;
+        padding: 32px;
+        max-width: 500px;
+        margin: 0 auto;
+        box-shadow: 0 4px 16px rgba(192, 57, 43, .08);
+    }
+
+    .confirm-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: #fde8e7;
+        color: #c0392b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        margin: 0 auto 20px;
+    }
+
+    .confirm-card h2 {
+        font-size: 22px;
+        font-weight: 700;
+        color: #c0392b;
+        text-align: center;
+        margin: 0 0 12px 0;
+    }
+
+    .confirm-card p {
+        color: #64746b;
+        font-size: 14px;
+        line-height: 1.6;
+        text-align: center;
+        margin: 0 0 24px 0;
+    }
+
+    .item-details {
+        background: #f7faf8;
+        border-left: 4px solid #c0392b;
+        padding: 16px;
+        border-radius: 8px;
+        margin: 24px 0;
+        font-size: 14px;
+    }
+
+    .item-details p {
+        margin: 6px 0;
+        text-align: left;
+    }
+
+    .item-details strong {
+        color: #1c3828;
+        font-weight: 700;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 28px;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 12px 20px;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all .2s ease;
+    }
+
+    .btn-danger {
+        background: #c0392b;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #a83225;
+    }
+
+    .btn-secondary {
+        background: #e9eee9;
+        color: #176b3a;
+    }
+
+    .btn-secondary:hover {
+        background: #d6dcd9;
+    }
+
+    .warning-text {
+        background: #fff4e5;
+        border-left: 4px solid #d97706;
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        color: #92400e;
+        margin: 16px 0;
+    }
+</style>
+
+<div class="confirm-card">
+    <div class="confirm-icon">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+    </div>
+
+    <h2>Hapus Stok Produk?</h2>
+
+    <p>
+        Anda akan menghapus stok produk ini dari 
+        <strong>{{ stok.chanel.nama_toko }}</strong>. 
+        Tindakan ini tidak dapat dibatalkan.
+    </p>
+
+    <div class="item-details">
+        <p><strong>Produk:</strong> {{ stok.produk.nama_produk }}</p>
+        <p><strong>Kode:</strong> {{ stok.produk.kode_produk }}</p>
+        <p><strong>Toko:</strong> {{ stok.chanel.nama_toko }}</p>
+        <p><strong>Stok Saat Ini:</strong> {{ stok.jumlah }} unit</p>
+    </div>
+
+    <div class="warning-text">
+        <i class="fa-solid fa-circle-exclamation" style="margin-right: 6px;"></i>
+        Stok ini akan dihapus dari toko. Perubahan akan otomatis terefleksikan pada "Seluruh Bazar".
+    </div>
+
+    <div class="action-buttons">
+        <form method="POST" style="flex: 1;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" style="width: 100%;">
+                <i class="fa-solid fa-trash"></i> Ya, Hapus Stok
+            </button>
+        </form>
+
+        <a href="{% url 'detail_chanel' stok.chanel.id %}" class="btn btn-secondary" style="flex: 1;">
+            <i class="fa-solid fa-arrow-left"></i> Batal
+        </a>
+    </div>
+</div>
+
+{% endblock %}

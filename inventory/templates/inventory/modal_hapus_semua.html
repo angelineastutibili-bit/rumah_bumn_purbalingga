@@ -1,0 +1,587 @@
+<!-- MODAL HAPUS SEMUA DATA (DUA TAHAP KONFIRMASI) -->
+<style>
+  .btn-hapus-semua {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: var(--radius-sm, 8px);
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    background: #DC2626 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #B91C1C !important;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.25);
+    transition: var(--transition, all 0.25s ease);
+  }
+
+  .btn-hapus-semua:hover {
+    background: #B91C1C !important;
+    color: #FFFFFF !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(185, 28, 28, 0.4);
+  }
+
+  .modal-hapus-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+    animation: fadeInOverlay 0.2s ease-out;
+  }
+
+  .modal-hapus-backdrop.active {
+    display: flex;
+  }
+
+  @keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUpModal {
+    from { transform: translateY(20px) scale(0.97); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  .modal-hapus-container {
+    background: #FFFFFF;
+    width: 100%;
+    max-width: 520px;
+    border-radius: 18px;
+    box-shadow: 0 25px 60px rgba(11, 45, 92, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    overflow: hidden;
+    animation: slideUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-hapus-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 22px 24px 18px;
+    border-bottom: 1px solid #F1F5F9;
+    position: relative;
+  }
+
+  .modal-hapus-icon {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+
+  .modal-hapus-icon.warning {
+    background: #FEF3C7;
+    color: #D97706;
+    border: 1px solid #FDE68A;
+  }
+
+  .modal-hapus-icon.danger {
+    background: #FEE2E2;
+    color: #DC2626;
+    border: 1px solid #FECACA;
+  }
+
+  .modal-hapus-title-area h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0F172A;
+    line-height: 1.3;
+  }
+
+  .modal-hapus-title-area p {
+    margin: 3px 0 0;
+    font-size: 12.5px;
+    color: #64746B;
+    font-weight: 500;
+  }
+
+  .modal-hapus-btn-close {
+    margin-left: auto;
+    background: #F1F5F9;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+
+  .modal-hapus-btn-close:hover {
+    background: #E2E8F0;
+    color: #0F172A;
+  }
+
+  .modal-hapus-body {
+    padding: 22px 24px;
+    color: #334155;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .modal-hapus-message {
+    color: #1E293B;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  .modal-hapus-card-info {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+  }
+
+  .modal-hapus-card-info .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+  }
+
+  .modal-hapus-card-info .info-row:not(:last-child) {
+    border-bottom: 1px dashed #E2E8F0;
+  }
+
+  .info-label {
+    font-size: 13px;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .info-value {
+    font-weight: 700;
+    color: #0F172A;
+    font-size: 13.5px;
+  }
+
+  .info-value.badge-count {
+    background: #FEE2E2;
+    color: #B91C1C;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    border: 1px solid #FECACA;
+  }
+
+  .modal-hapus-alert-box {
+    background: #FEF2F2;
+    border: 1px solid #FCA5A5;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 18px;
+  }
+
+  .modal-hapus-alert-box i {
+    color: #DC2626;
+    font-size: 18px;
+    margin-top: 2px;
+  }
+
+  .modal-hapus-alert-box .alert-text {
+    font-size: 13px;
+    color: #991B1B;
+    line-height: 1.5;
+  }
+
+  .phrase-box {
+    margin-top: 14px;
+  }
+
+  .phrase-box label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0F172A;
+    margin-bottom: 8px;
+  }
+
+  .phrase-target {
+    display: inline-block;
+    background: #F1F5F9;
+    border: 2px dashed #CBD5E1;
+    color: #DC2626;
+    font-weight: 800;
+    font-size: 15px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    user-select: all;
+    font-family: monospace;
+  }
+
+  .input-confirm-phrase {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #CBD5E1;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0F172A;
+    background: #FFFFFF;
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.2s;
+  }
+
+  .input-confirm-phrase:focus {
+    border-color: #DC2626;
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.15);
+  }
+
+  .input-confirm-phrase.is-valid {
+    border-color: #10B981;
+    background: #F0FDF4;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+  }
+
+  .phrase-valid-hint {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: #059669;
+    font-weight: 600;
+    margin-top: 6px;
+  }
+
+  .modal-hapus-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px 22px;
+    border-top: 1px solid #F1F5F9;
+    background: #FAFAFA;
+  }
+
+  .btn-next-step {
+    background: #DC2626;
+    color: #FFFFFF !important;
+    border: 1px solid #B91C1C;
+    padding: 10px 18px;
+    border-radius: var(--radius-sm, 8px);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+
+  .btn-next-step:hover {
+    background: #B91C1C;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  }
+
+  .btn-final-delete {
+    background: #94A3B8;
+    color: #FFFFFF !important;
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm, 8px);
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: not-allowed;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    opacity: 0.6;
+  }
+
+  .btn-final-delete.enabled {
+    background: #DC2626;
+    cursor: pointer;
+    opacity: 1;
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.35);
+  }
+
+  .btn-final-delete.enabled:hover {
+    background: #B91C1C;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(185, 28, 28, 0.45);
+  }
+
+  @media (max-width: 576px) {
+    .modal-hapus-container {
+      max-width: 100%;
+    }
+    .modal-hapus-header, .modal-hapus-body, .modal-hapus-footer {
+      padding-left: 18px;
+      padding-right: 18px;
+    }
+    .modal-hapus-footer {
+      flex-direction: column-reverse;
+      gap: 8px;
+    }
+    .modal-hapus-footer button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<div id="modalHapusSemuaOverlay" class="modal-hapus-backdrop">
+    <div class="modal-hapus-container" onclick="event.stopPropagation()">
+        
+        <!-- TAHAP 1: PERINGATAN SEBELUM MENGHAPUS -->
+        <div id="modalHapusStep1">
+            <div class="modal-hapus-header">
+                <div class="modal-hapus-icon warning">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="modal-hapus-title-area">
+                    <h3>Konfirmasi Hapus Semua Data</h3>
+                    <p>Tahap 1 dari 2: Verifikasi Tindakan</p>
+                </div>
+                <button type="button" class="modal-hapus-btn-close" onclick="tutupModalHapusSemua()" title="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="modal-hapus-body">
+                <p class="modal-hapus-message">
+                    Apakah Anda yakin ingin menghapus seluruh data pada halaman ini? Data yang dihapus tidak dapat dikembalikan. Pastikan Anda benar-benar ingin melanjutkan.
+                </p>
+
+                <div class="modal-hapus-card-info">
+                    <div class="info-row">
+                        <span class="info-label"><i class="fa-solid fa-folder-open"></i> Jenis Data</span>
+                        <span id="modalHapusLabelNama1" class="info-value">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label"><i class="fa-solid fa-list-check"></i> Jumlah Data Terdaftar</span>
+                        <span id="modalHapusLabelJumlah1" class="info-value badge-count">0 item</span>
+                    </div>
+                </div>
+
+                <div style="font-size: 12.5px; color: #64748B; display: flex; gap: 8px; align-items: flex-start;">
+                    <i class="fa-solid fa-shield-halved" style="color: #0284C7; margin-top: 3px;"></i>
+                    <span>Penghapusan hanya memengaruhi data pada halaman ini. Akun pengguna, hak akses, dan konfigurasi sistem tidak akan terhapus.</span>
+                </div>
+            </div>
+
+            <div class="modal-hapus-footer">
+                <button type="button" class="btn btn-secondary" onclick="tutupModalHapusSemua()">
+                    <i class="fa-solid fa-xmark"></i> Batal
+                </button>
+                <button type="button" class="btn-next-step" onclick="lanjutKeTahap2()">
+                    Lanjutkan Hapus <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- TAHAP 2: KONFIRMASI KEDUA UNTUK MENCEGAH SALAH KLIK -->
+        <div id="modalHapusStep2" style="display: none;">
+            <div class="modal-hapus-header">
+                <div class="modal-hapus-icon danger">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                </div>
+                <div class="modal-hapus-title-area">
+                    <h3 style="color: #DC2626;">Konfirmasi Terakhir</h3>
+                    <p>Tahap 2 dari 2: Mencegah Salah Klik</p>
+                </div>
+                <button type="button" class="modal-hapus-btn-close" onclick="tutupModalHapusSemua()" title="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="formHapusSemuaData" method="POST" action="" onsubmit="return submitHapusSemuaForm(event)">
+                {% csrf_token %}
+                <input type="hidden" name="konfirmasi_frasa" id="hiddenKonfirmasiFrasaInput" value="">
+
+                <div class="modal-hapus-body">
+                    <div class="modal-hapus-alert-box">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <div class="alert-text">
+                            <strong>PERINGATAN KERAS:</strong> Anda akan menghapus seluruh <strong id="modalHapusLabelNama2">-</strong> sebanyak <strong id="modalHapusLabelJumlah2">0 item</strong>. Tindakan ini bersifat permanen dan tidak dapat dibatalkan!
+                        </div>
+                    </div>
+
+                    <div class="phrase-box">
+                        <label for="inputKonfirmasiFrasaText">
+                            Ketik frasa konfirmasi berikut untuk membuka tombol hapus:
+                        </label>
+                        <div>
+                            <span class="phrase-target">HAPUS SEMUA DATA</span>
+                        </div>
+                        <input
+                            type="text"
+                            id="inputKonfirmasiFrasaText"
+                            class="input-confirm-phrase"
+                            placeholder="Ketik HAPUS SEMUA DATA di sini"
+                            autocomplete="off"
+                            oninput="cekFrasaKonfirmasi()"
+                        >
+                        <div id="phraseValidHint" class="phrase-valid-hint">
+                            <i class="fa-solid fa-circle-check"></i> Frasa cocok! Anda dapat menekan tombol konfirmasi di bawah.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-hapus-footer">
+                    <button type="button" class="btn btn-secondary" onclick="tutupModalHapusSemua()">
+                        <i class="fa-solid fa-xmark"></i> Batal
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="kembaliKeTahap1()" style="margin-right: auto;">
+                        <i class="fa-solid fa-arrow-left"></i> Kembali
+                    </button>
+                    <button
+                        type="submit"
+                        id="btnSubmitHapusSemuaFinal"
+                        class="btn-final-delete"
+                        disabled
+                    >
+                        <i class="fa-solid fa-trash-can"></i> Ya, Hapus Semua Data Sekarang
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+(function() {
+    var modalOverlay = document.getElementById('modalHapusSemuaOverlay');
+    var step1 = document.getElementById('modalHapusStep1');
+    var step2 = document.getElementById('modalHapusStep2');
+    var form = document.getElementById('formHapusSemuaData');
+    var inputFrasa = document.getElementById('inputKonfirmasiFrasaText');
+    var hiddenFrasa = document.getElementById('hiddenKonfirmasiFrasaInput');
+    var btnSubmit = document.getElementById('btnSubmitHapusSemuaFinal');
+    var validHint = document.getElementById('phraseValidHint');
+    var targetFrasa = "HAPUS SEMUA DATA";
+
+    window.bukaModalHapusSemua = function(actionUrl, namaData, jumlahData) {
+        if (!modalOverlay) return;
+        form.action = actionUrl;
+        
+        var displayJumlah = (jumlahData !== undefined && jumlahData !== null) ? (jumlahData + ' item') : 'Semua item';
+        
+        document.getElementById('modalHapusLabelNama1').textContent = namaData;
+        document.getElementById('modalHapusLabelNama2').textContent = namaData;
+        document.getElementById('modalHapusLabelJumlah1').textContent = displayJumlah;
+        document.getElementById('modalHapusLabelJumlah2').textContent = displayJumlah;
+        
+        // Reset state
+        step1.style.display = 'block';
+        step2.style.display = 'none';
+        inputFrasa.value = '';
+        hiddenFrasa.value = '';
+        inputFrasa.classList.remove('is-valid');
+        validHint.style.display = 'none';
+        btnSubmit.disabled = true;
+        btnSubmit.classList.remove('enabled');
+        btnSubmit.innerHTML = '<i class="fa-solid fa-trash-can"></i> Ya, Hapus Semua Data Sekarang';
+        
+        modalOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.tutupModalHapusSemua = function() {
+        if (!modalOverlay) return;
+        modalOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+        inputFrasa.value = '';
+        hiddenFrasa.value = '';
+        btnSubmit.disabled = true;
+        btnSubmit.classList.remove('enabled');
+    };
+
+    window.lanjutKeTahap2 = function() {
+        step1.style.display = 'none';
+        step2.style.display = 'block';
+        setTimeout(function() {
+            inputFrasa.focus();
+        }, 100);
+    };
+
+    window.kembaliKeTahap1 = function() {
+        step2.style.display = 'none';
+        step1.style.display = 'block';
+    };
+
+    window.cekFrasaKonfirmasi = function() {
+        var val = inputFrasa.value.trim();
+        if (val === targetFrasa) {
+            btnSubmit.disabled = false;
+            btnSubmit.classList.add('enabled');
+            inputFrasa.classList.add('is-valid');
+            validHint.style.display = 'flex';
+            hiddenFrasa.value = targetFrasa;
+        } else {
+            btnSubmit.disabled = true;
+            btnSubmit.classList.remove('enabled');
+            inputFrasa.classList.remove('is-valid');
+            validHint.style.display = 'none';
+            hiddenFrasa.value = '';
+        }
+    };
+
+    window.submitHapusSemuaForm = function(e) {
+        if (inputFrasa.value.trim() !== targetFrasa) {
+            e.preventDefault();
+            alert("Harap ketik frasa konfirmasi 'HAPUS SEMUA DATA' dengan tepat!");
+            return false;
+        }
+        hiddenFrasa.value = targetFrasa;
+        btnSubmit.disabled = true;
+        btnSubmit.classList.remove('enabled');
+        btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menghapus Data...';
+        return true;
+    };
+
+    // Close on click backdrop
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) {
+                tutupModalHapusSemua();
+            }
+        });
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modalOverlay && modalOverlay.classList.contains('active')) {
+            tutupModalHapusSemua();
+        }
+    });
+})();
+</script>

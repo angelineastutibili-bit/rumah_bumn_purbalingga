@@ -1,0 +1,113 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Data UMKM{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Data UMKM</h1>
+        <p>Kelola data mitra UMKM yang terdaftar di Rumah BUMN Purbalingga.</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-store"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="section">
+    <div class="toolbar">
+        <form method="GET" class="search-form">
+            <input type="text" name="q" value="{{ query }}" placeholder="Cari UMKM berdasarkan nama, pemilik, usaha, atau alamat..." class="search-input">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-magnifying-glass"></i> Cari
+            </button>
+            {% if query %}
+            <a href="{% url 'data_umkm' %}" class="btn btn-secondary">Reset</a>
+            {% endif %}
+        </form>
+
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <a href="{% url 'ekspor_csv' 'umkm' %}" class="btn-export">
+                <i class="fa-solid fa-file-excel"></i> Ekspor CSV
+            </a>
+            <a href="{% url 'tambah_umkm' %}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Tambah UMKM
+            </a>
+            <button type="button" class="btn btn-hapus-semua" onclick="bukaModalHapusSemua('{% url 'hapus_semua_data' 'umkm' %}', 'Data UMKM', {{ umkm|length }})">
+                <i class="fa-solid fa-trash-can"></i> Hapus Semua Data
+            </button>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 50px;">No</th>
+                    <th>Nama UMKM</th>
+                    <th>Pemilik</th>
+                    <th>Jenis Usaha</th>
+                    <th>Tanggal Terdaftar</th>
+                    <th>Kontak / Telp</th>
+                    <th>Alamat</th>
+                    <th>Total Produk</th>
+                    <th style="width: 200px;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in umkm %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><strong>{{ item.nama }}</strong></td>
+                    <td>{{ item.pemilik|default:"-" }}</td>
+                    <td>
+                        <span class="badge badge-info">{{ item.jenis_usaha }}</span>
+                    </td>
+                    <td>
+                        <div style="font-size: 13px; font-weight: 500; color: #2c3e34; white-space: nowrap;">
+                            <i class="fa-regular fa-calendar" style="color: #176b3a; margin-right: 4px;"></i>
+                            {{ item.tanggal_terdaftar|date:"d M Y"|default:"-" }}
+                        </div>
+                    </td>
+                    <td>
+                        {% if item.kontak %}
+                        <a href="https://wa.me/{{ item.kontak|cut:' '|cut:'-' }}" target="_blank" style="color: #176b3a; text-decoration: none;">
+                            <i class="fa-brands fa-whatsapp"></i> {{ item.kontak }}
+                        </a>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td>{{ item.alamat|default:"-" }}</td>
+                    <td>
+                        <span class="badge badge-success">{{ item.total_produk }} Produk</span>
+                    </td>
+                    <td>
+                        <div class="aksi">
+                            <a href="{% url 'detail_umkm' item.id %}" class="btn-detail" title="Detail UMKM">
+                                <i class="fa-solid fa-eye"></i> Detail
+                            </a>
+                            <a href="{% url 'edit_umkm' item.id %}" class="btn-edit" title="Edit UMKM">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </a>
+                            <a href="{% url 'hapus_umkm' item.id %}" class="btn-hapus" title="Hapus UMKM" onclick="return confirm('Apakah Anda yakin ingin menghapus data UMKM \'{{ item.nama }}\'?');">
+                                <i class="fa-solid fa-trash-can"></i> Hapus
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="empty">
+                        <i class="fa-solid fa-store-slash"></i>
+                        <p>Belum ada data UMKM yang ditemukan.</p>
+                        <small>Klik tombol <strong>+ Tambah UMKM</strong> untuk menambahkan mitra usaha baru.</small>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

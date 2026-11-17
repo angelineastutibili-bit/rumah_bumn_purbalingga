@@ -1,0 +1,69 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Edit Toko - {{ chanel.nama_toko }}{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Edit Toko / Chanel</h1>
+        <p>Perbarui informasi toko {{ chanel.nama_toko }}.</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-pen-to-square"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <div class="section-header" style="margin-bottom: 25px;">
+        <div>
+            <h2>Formulir Edit Toko</h2>
+            <p>Sesuaikan data toko atau chanel di bawah ini.</p>
+        </div>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="nama_toko">Nama Toko *</label>
+            <input
+                type="text"
+                id="nama_toko"
+                name="nama_toko"
+                value="{{ chanel.nama_toko }}"
+                required
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="lokasi">Lokasi / Alamat</label>
+            <input
+                type="text"
+                id="lokasi"
+                name="lokasi"
+                value="{{ chanel.lokasi|default:'' }}"
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="keterangan">Keterangan Tambahan</label>
+            <textarea
+                id="keterangan"
+                name="keterangan"
+                rows="4"
+            >{{ chanel.keterangan|default:'' }}</textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
+            </button>
+            <a href="{% url 'detail_chanel' chanel.id %}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Batal
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

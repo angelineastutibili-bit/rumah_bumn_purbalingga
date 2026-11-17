@@ -1,0 +1,87 @@
+ {% extends 'inventory/base.html' %}
+
+{% block title %}Barang Keluar{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Barang Keluar</h1>
+        <p>Catat dan pantau pengeluaran/penjualan langsung dari kantor.</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-dolly"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="section">
+    <div class="section-header">
+        <form method="GET" class="search-form">
+            <input
+                type="text"
+                name="q"
+                class="search-input"
+                placeholder="Cari produk, tujuan, keterangan..."
+                value="{{ query }}"
+            >
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+            {% if query %}
+            <a href="{% url 'data_barang_keluar' %}" class="btn btn-secondary" title="Reset">
+                <i class="fa-solid fa-xmark"></i>
+            </a>
+            {% endif %}
+        </form>
+
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <a href="{% url 'tambah_barang_keluar' %}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Tambah Barang Keluar
+            </a>
+            <a href="{% url 'ekspor_csv' 'barang_keluar' %}" class="btn-export">
+                <i class="fa-solid fa-file-csv"></i> Ekspor CSV
+            </a>
+            <button type="button" class="btn btn-hapus-semua" onclick="bukaModalHapusSemua('{% url 'hapus_semua_data' 'barang_keluar' %}', 'Data Barang Keluar', {{ barang_keluar|length }})">
+                <i class="fa-solid fa-trash-can"></i> Hapus Semua Data
+            </button>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Tanggal</th>
+                    <th>Kode Produk</th>
+                    <th>Nama Produk</th>
+                    <th>Jumlah</th>
+                    <th>Tujuan Pengeluaran</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in barang_keluar %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.tanggal|date:"d/m/Y H:i" }}</td>
+                    <td><strong>{{ item.produk.kode_produk }}</strong></td>
+                    <td>{{ item.produk.nama_produk }}</td>
+                    <td><span class="badge badge-danger">-{{ item.jumlah }} unit</span></td>
+                    <td>{{ item.tujuan|default:"-" }}</td>
+                    <td>{{ item.keterangan|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="empty">
+                        <i class="fa-solid fa-dolly"></i>
+                        Belum ada riwayat data barang keluar.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

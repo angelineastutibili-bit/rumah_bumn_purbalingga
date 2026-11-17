@@ -1,0 +1,162 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Tambah Stok | {{ chanel.nama_toko }}{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Tambah Stok Toko</h1>
+        <p>Tambahkan persediaan produk ke chanel {{ chanel.nama_toko }}.</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-boxes-packing"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <div class="section-header" style="margin-bottom: 25px;">
+        <div>
+            <h2>Form Penambahan Stok di {{ chanel.nama_toko }}</h2>
+            <p>Pilih produk dan masukkan jumlah stok yang dialokasikan ke toko ini.</p>
+        </div>
+    </div>
+
+    <form method="POST" id="formTambahStokChanel">
+        {% csrf_token %}
+
+        <!-- PILIHAN SUMBER BARANG -->
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label for="sumber_barang">Sumber Barang *</label>
+            <select name="sumber_barang" id="sumber_barang" class="form-control" required>
+                <option value="kantor" selected>Stok Kantor (Stok fisik kantor akan otomatis dipotong)</option>
+                <option value="langsung">Langsung / Non-Kantor (Tanpa memotong stok kantor)</option>
+            </select>
+            <small id="sumberHelp" style="color: #64746b; font-size: 12px; display: block; margin-top: 5px;">
+                <i class="fa-solid fa-circle-info" style="color: #176b3a;"></i> Secara default produk diambil dari Stok Kantor dan memotong sisa persediaan kantor secara otomatis.
+            </small>
+        </div>
+
+        <!-- PILIH PRODUK DARI DAFTAR STOK KANTOR -->
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label for="produk">Produk *</label>
+            <select name="produk" id="produk" class="form-control" required>
+                <option value="">-- Pilih Produk dari Daftar Stok Kantor --</option>
+                {% for item in produk %}
+                <option value="{{ item.id }}" data-stok="{{ item.stok_kantor }}" data-nama="{{ item.nama_produk }}">
+                    {{ item.kode_produk }} - {{ item.nama_produk }} (Stok Kantor: {{ item.stok_kantor }} unit{% if item.umkm %} | UMKM: {{ item.umkm.nama }}{% endif %})
+                </option>
+                {% endfor %}
+            </select>
+
+            <!-- Info Badge Sisa Stok Kantor -->
+            <div id="stokKantorBadge" style="display: none; margin-top: 9px; padding: 10px 14px; border-radius: 8px; background: #e8f4ec; color: #176b3a; font-size: 13px; font-weight: 600; border: 1px solid #c8e6d0;">
+                <i class="fa-solid fa-building" style="margin-right: 6px;"></i> Sisa Stok Tersedia di Kantor: <span id="stokKantorTersedia" style="font-size: 15px; font-weight: 800;">0</span> unit
+            </div>
+        </div>
+
+        <!-- JUMLAH STOK -->
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label for="jumlah">Jumlah Produk *</label>
+            <input
+                type="number"
+                name="jumlah"
+                id="jumlah"
+                class="form-control"
+                min="1"
+                placeholder="Contoh: 10"
+                required
+            >
+            <div id="warningStok" style="display: none; color: #c0392b; font-size: 12px; font-weight: 600; margin-top: 6px;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Peringatan: Jumlah yang dimasukkan melebihi sisa stok kantor yang tersedia!
+            </div>
+        </div>
+
+        <!-- KETERANGAN / CATATAN -->
+        <div class="form-group" style="margin-bottom: 24px;">
+            <label for="keterangan">Keterangan / Catatan Alokasi (Opsional)</label>
+            <textarea
+                name="keterangan"
+                id="keterangan"
+                class="form-control"
+                rows="2"
+                placeholder="Contoh: Pengiriman mingguan ke toko, stok display bazar, dsb."
+            ></textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" id="btnSubmitStok" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Stok
+            </button>
+            <a href="{% url 'detail_chanel' chanel.id %}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Batal
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const produkSelect = document.getElementById('produk');
+    const sumberSelect = document.getElementById('sumber_barang');
+    const jumlahInput = document.getElementById('jumlah');
+    const stokKantorBadge = document.getElementById('stokKantorBadge');
+    const stokKantorTersedia = document.getElementById('stokKantorTersedia');
+    const warningStok = document.getElementById('warningStok');
+    const form = document.getElementById('formTambahStokChanel');
+
+    function updateStokValidation() {
+        const selectedOption = produkSelect.options[produkSelect.selectedIndex];
+        const isKantor = (sumberSelect.value === 'kantor');
+
+        if (selectedOption && selectedOption.value) {
+            const stokKantor = parseInt(selectedOption.getAttribute('data-stok') || '0', 10);
+            stokKantorTersedia.textContent = stokKantor;
+            stokKantorBadge.style.display = isKantor ? 'block' : 'none';
+
+            if (isKantor) {
+                const inputVal = parseInt(jumlahInput.value || '0', 10);
+                if (inputVal > stokKantor) {
+                    warningStok.style.display = 'block';
+                    warningStok.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Peringatan: Jumlah yang diminta (${inputVal} unit) melebihi stok kantor yang tersedia (${stokKantor} unit)!`;
+                    jumlahInput.style.borderColor = '#c0392b';
+                    jumlahInput.style.boxShadow = '0 0 0 3px rgba(192, 57, 43, 0.15)';
+                } else {
+                    warningStok.style.display = 'none';
+                    jumlahInput.style.borderColor = '';
+                    jumlahInput.style.boxShadow = '';
+                }
+            } else {
+                warningStok.style.display = 'none';
+                jumlahInput.style.borderColor = '';
+                jumlahInput.style.boxShadow = '';
+            }
+        } else {
+            stokKantorBadge.style.display = 'none';
+            warningStok.style.display = 'none';
+        }
+    }
+
+    produkSelect.addEventListener('change', updateStokValidation);
+    sumberSelect.addEventListener('change', updateStokValidation);
+    jumlahInput.addEventListener('input', updateStokValidation);
+
+    form.addEventListener('submit', function(e) {
+        const selectedOption = produkSelect.options[produkSelect.selectedIndex];
+        const isKantor = (sumberSelect.value === 'kantor');
+
+        if (isKantor && selectedOption && selectedOption.value) {
+            const stokKantor = parseInt(selectedOption.getAttribute('data-stok') || '0', 10);
+            const inputVal = parseInt(jumlahInput.value || '0', 10);
+
+            if (inputVal > stokKantor) {
+                e.preventDefault();
+                alert(`Transaksi ditolak: Jumlah (${inputVal} unit) melebihi sisa stok kantor yang tersedia (${stokKantor} unit). Silakan sesuaikan jumlah barang.`);
+                jumlahInput.focus();
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

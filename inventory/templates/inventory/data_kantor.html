@@ -1,0 +1,237 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Stok Kantor{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Stok Kantor</h1>
+        <p>Pantau persediaan fisik produk yang tersimpan di Kantor Rumah BUMN Purbalingga.</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-building"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="section">
+    <div class="section-header" style="margin-bottom: 20px;">
+        <form method="GET" class="search-form" id="searchKantorForm" style="flex: 1; max-width: 550px;">
+            <div style="position: relative; width: 100%; display: flex; gap: 8px; align-items: center;">
+                <div style="position: relative; flex: 1;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #7a8980; font-size: 13px;"></i>
+                    <input
+                        type="text"
+                        name="q"
+                        id="searchKantorInput"
+                        class="search-input"
+                        placeholder="Cari berdasarkan Nama Produk, Kode/SKU, atau Kategori..."
+                        value="{{ query }}"
+                        style="padding-left: 36px; padding-right: 32px; width: 100%;"
+                        autocomplete="off"
+                    >
+                    {% if query %}
+                    <button type="button" onclick="clearLiveSearchKantor()" title="Hapus pencarian" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #7a8980; cursor: pointer; padding: 2px 4px; font-size: 14px;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary" title="Cari produk">
+                    <i class="fa-solid fa-magnifying-glass"></i> Cari
+                </button>
+                {% if query %}
+                <a href="{% url 'data_kantor' %}" class="btn btn-secondary" title="Reset">
+                    <i class="fa-solid fa-rotate-left"></i> Reset
+                </a>
+                {% endif %}
+            </div>
+        </form>
+
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div id="searchKantorCounterBadge" style="display: none; font-size: 12.5px; padding: 6px 14px; border-radius: 20px; background: #e0f0e5; color: #176b3a; font-weight: 600;">
+                <i class="fa-solid fa-filter" style="margin-right: 5px;"></i><span id="searchKantorCounterText"></span>
+            </div>
+            <div style="background: #e5f5e9; padding: 8px 16px; border-radius: 8px; color: #176b3a; font-weight: 700; font-size: 13px;">
+                Total Stok: {{ total_kantor }} unit
+            </div>
+            <a href="{% url 'tambah_barang_masuk' %}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Tambah Stok Masuk
+            </a>
+            <a href="{% url 'ekspor_csv' 'kantor' %}" class="btn-export">
+                <i class="fa-solid fa-file-csv"></i> Ekspor CSV
+            </a>
+            <button type="button" class="btn btn-hapus-semua" onclick="bukaModalHapusSemua('{% url 'hapus_semua_data' 'kantor' %}', 'Stok Kantor', {{ stok|length }})">
+                <i class="fa-solid fa-trash-can"></i> Hapus Semua Data
+            </button>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="kantorTable">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">No</th>
+                    <th>Kode Produk</th>
+                    <th>Nama Produk</th>
+                    <th>Kategori</th>
+                    <th>UMKM</th>
+                    <th>Stok Kantor</th>
+                    <th>Batas Minimum</th>
+                    <th>Status</th>
+                    <th style="width: 100px;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in stok %}
+                <tr class="kantor-row"
+                    data-kode="{{ item.produk.kode_produk|lower }}"
+                    data-nama="{{ item.produk.nama_produk|lower }}"
+                    data-kategori="{{ item.produk.kategori|default:''|lower }}"
+                    data-umkm="{{ item.produk.umkm.nama|default:''|lower }}">
+                    <td class="row-number">{{ forloop.counter }}</td>
+                    <td><strong>{{ item.produk.kode_produk }}</strong></td>
+                    <td><strong>{{ item.produk.nama_produk }}</strong></td>
+                    <td>
+                        <span class="badge badge-info">{{ item.produk.kategori|default:"-" }}</span>
+                    </td>
+                    <td>{{ item.produk.umkm.nama|default:"-" }}</td>
+                    <td>
+                        <strong style="color: {% if item.stok_kantor == 0 %}#c0392b{% elif item.stok_kantor <= item.produk.stok_minimum %}#e67e22{% else %}#176b3a{% endif %}; font-size: 14px;">
+                            {{ item.stok_kantor }}
+                        </strong>
+                    </td>
+                    <td>{{ item.produk.stok_minimum }}</td>
+                    <td>
+                        {% if item.stok_kantor == 0 %}
+                            <span class="badge badge-danger">Habis</span>
+                        {% elif item.stok_kantor <= item.produk.stok_minimum %}
+                            <span class="badge badge-warning">Menipis</span>
+                        {% else %}
+                            <span class="badge badge-success">Aman</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="aksi">
+                            <a href="{% url 'edit_stok' item.id %}" class="btn-edit" title="Ubah Stok">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="empty">
+                        <i class="fa-solid fa-building"></i>
+                        <p>Belum ada data stok kantor ditemukan.</p>
+                        {% if query %}
+                        <small>Coba gunakan kata kunci lain atau <a href="{% url 'data_kantor' %}" style="color: #176b3a; font-weight: 600;">reset pencarian</a>.</small>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchKantorInput');
+    const tableBody = document.querySelector('#kantorTable tbody');
+    const rows = document.querySelectorAll('.kantor-row');
+    const counterBadge = document.getElementById('searchKantorCounterBadge');
+    const counterText = document.getElementById('searchKantorCounterText');
+
+    let debounceTimer;
+
+    function filterTable(rawQuery) {
+        const query = rawQuery.trim().toLowerCase();
+        let visibleCount = 0;
+
+        const existingEmpty = document.getElementById('liveEmptyKantorRow');
+        if (existingEmpty) {
+            existingEmpty.remove();
+        }
+
+        rows.forEach(row => {
+            const kode = row.getAttribute('data-kode') || '';
+            const nama = row.getAttribute('data-nama') || '';
+            const kategori = row.getAttribute('data-kategori') || '';
+            const umkm = row.getAttribute('data-umkm') || '';
+
+            const match = !query || 
+                          kode.includes(query) || 
+                          nama.includes(query) || 
+                          kategori.includes(query) || 
+                          umkm.includes(query);
+
+            if (match) {
+                row.style.display = '';
+                visibleCount++;
+                const numCell = row.querySelector('.row-number');
+                if (numCell) {
+                    numCell.textContent = visibleCount;
+                }
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        if (query) {
+            if (counterBadge && counterText) {
+                counterBadge.style.display = 'inline-flex';
+                counterText.textContent = `${visibleCount} produk cocok`;
+            }
+
+            if (visibleCount === 0 && tableBody) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.id = 'liveEmptyKantorRow';
+                emptyRow.innerHTML = `
+                    <td colspan="9" class="empty">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <p>Tidak ditemukan produk yang cocok dengan "<strong>${rawQuery}</strong>".</p>
+                        <small>Pencarian memeriksa <strong>Nama Produk</strong>, <strong>Kode/SKU</strong>, dan <strong>Kategori</strong>.</small>
+                    </td>
+                `;
+                tableBody.appendChild(emptyRow);
+            }
+        } else {
+            if (counterBadge) {
+                counterBadge.style.display = 'none';
+            }
+            rows.forEach((row, idx) => {
+                const numCell = row.querySelector('.row-number');
+                if (numCell) {
+                    numCell.textContent = idx + 1;
+                }
+            });
+        }
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                filterTable(e.target.value);
+            }, 250);
+        });
+
+        if (searchInput.value.trim() && rows.length > 0) {
+            if (counterBadge && counterText) {
+                counterBadge.style.display = 'inline-flex';
+                counterText.textContent = `${rows.length} produk ditemukan`;
+            }
+        }
+    }
+
+    window.clearLiveSearchKantor = function() {
+        if (searchInput) {
+            searchInput.value = '';
+            filterTable('');
+            window.location.href = "{% url 'data_kantor' %}";
+        }
+    };
+});
+</script>
+{% endblock %}

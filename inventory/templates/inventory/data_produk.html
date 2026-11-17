@@ -1,0 +1,120 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Data Produk{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Data Produk</h1>
+        <p>Kelola dan pantau data produk UMKM Rumah BUMN Purbalingga.</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-box"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="section">
+    <div class="section-header">
+        <div class="toolbar" style="margin-bottom: 0; width: 100%;">
+            <form method="GET" class="search-form">
+                <input
+                    type="text"
+                    name="q"
+                    class="search-input"
+                    placeholder="Cari kode, nama produk, UMKM..."
+                    value="{{ query }}"
+                >
+                {% if kategori_filter %}
+                <input type="hidden" name="kategori" value="{{ kategori_filter }}">
+                {% endif %}
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+                {% if query %}
+                <a href="{% url 'data_produk' %}" class="btn btn-secondary" title="Reset">
+                    <i class="fa-solid fa-xmark"></i>
+                </a>
+                {% endif %}
+            </form>
+
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                {% if kategori_list %}
+                <form method="GET" style="display: inline-block;">
+                    {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+                    <select name="kategori" onchange="this.form.submit()" style="padding: 10px 14px; border: 1px solid #d5dfd8; border-radius: 8px; font-size: 13px;">
+                        <option value="">Semua Kategori</option>
+                        {% for kat in kategori_list %}
+                        <option value="{{ kat }}" {% if kategori_filter == kat %}selected{% endif %}>{{ kat }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+                {% endif %}
+
+                <a href="{% url 'tambah_produk' %}" class="btn btn-primary">
+                    <i class="fa-solid fa-plus"></i> Tambah Produk
+                </a>
+                <a href="{% url 'ekspor_csv' 'produk' %}" class="btn-export">
+                    <i class="fa-solid fa-file-csv"></i> Ekspor CSV
+                </a>
+                <button type="button" class="btn btn-hapus-semua" onclick="bukaModalHapusSemua('{% url 'hapus_semua_data' 'produk' %}', 'Data Produk', {{ produk|length }})">
+                    <i class="fa-solid fa-trash-can"></i> Hapus Semua Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Kode</th>
+                    <th>Nama Produk</th>
+                    <th>UMKM</th>
+                    <th>Kategori</th>
+                    <th>Harga Beli</th>
+                    <th>Harga Jual</th>
+                    <th>Stok Min.</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in produk %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><strong>{{ item.kode_produk }}</strong></td>
+                    <td>{{ item.nama_produk }}</td>
+                    <td>{{ item.umkm.nama|default:"-" }}</td>
+                    <td><span class="badge badge-info">{{ item.kategori|default:"Umum" }}</span></td>
+                    <td>Rp {{ item.harga_beli }}</td>
+                      <td><strong>Rp {{ item.harga_jual }}</strong></td> 
+                    <td>{{ item.stok_minimum }}</td>
+                    <td>
+                        <div class="aksi">
+                            <a href="{% url 'detail_produk' item.id %}" class="btn-detail" title="Detail">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                            <a href="{% url 'edit_produk' item.id %}" class="btn-edit" title="Edit">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            <a href="{% url 'hapus_produk' item.id %}" class="btn-hapus" title="Hapus" onclick="return confirm('Apakah Anda yakin ingin menghapus produk {{ item.nama_produk }}?');">
+                                <i class="fa-solid fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="empty">
+                        <i class="fa-solid fa-box-open"></i>
+                        Belum ada data produk.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

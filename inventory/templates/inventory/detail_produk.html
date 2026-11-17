@@ -1,0 +1,157 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Detail Produk - {{ produk.nama_produk }}{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Detail Produk</h1>
+        <p>{{ produk.kode_produk }} &ndash; {{ produk.nama_produk }}</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-box"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="section" style="margin-bottom: 25px;">
+    <div class="section-header">
+        <div>
+            <h2>Informasi Produk</h2>
+            <p>Data profil dan harga produk UMKM.</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <a href="{% url 'edit_produk' produk.id %}" class="btn btn-primary">
+                <i class="fa-solid fa-pen-to-square"></i> Edit Produk
+            </a>
+            <a href="{% url 'data_produk' %}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Kembali
+            </a>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
+        <div style="background: #f7faf8; padding: 15px; border-radius: 10px;">
+            <span style="color: #7a8980; font-size: 12px; font-weight: 600;">KODE PRODUK</span>
+            <p style="font-size: 16px; font-weight: 700; color: #176b3a; margin-top: 4px;">{{ produk.kode_produk }}</p>
+        </div>
+        <div style="background: #f7faf8; padding: 15px; border-radius: 10px;">
+            <span style="color: #7a8980; font-size: 12px; font-weight: 600;">MITRA UMKM</span>
+            <p style="font-size: 16px; font-weight: 700; color: #26352d; margin-top: 4px;">{{ produk.umkm.nama|default:"-" }}</p>
+        </div>
+        <div style="background: #f7faf8; padding: 15px; border-radius: 10px;">
+            <span style="color: #7a8980; font-size: 12px; font-weight: 600;">PEMILIK</span>
+            <p style="font-size: 16px; font-weight: 700; color: #26352d; margin-top: 4px;">{{ produk.nama_pemilik }}</p>
+        </div>
+        <div style="background: #f7faf8; padding: 15px; border-radius: 10px;">
+            <span style="color: #7a8980; font-size: 12px; font-weight: 600;">KATEGORI</span>
+            <p style="font-size: 16px; font-weight: 700; color: #26352d; margin-top: 4px;">{{ produk.kategori }}</p>
+        </div>
+        <div style="background: #f7faf8; padding: 15px; border-radius: 10px;">
+            <span style="color: #7a8980; font-size: 12px; font-weight: 600;">HARGA BELI</span>
+            <p style="font-size: 16px; font-weight: 700; color: #26352d; margin-top: 4px;">Rp {{ produk.harga_beli }}</p>
+        </div>
+        <div style="background: #f7faf8; padding: 15px; border-radius: 10px;">
+            <span style="color: #7a8980; font-size: 12px; font-weight: 600;">HARGA JUAL</span>
+            <p style="font-size: 16px; font-weight: 700; color: #176b3a; margin-top: 4px;">Rp {{ produk.harga_jual }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- SEBARAN STOK -->
+<div class="section" style="margin-bottom: 25px;">
+    <div class="section-header">
+        <div>
+            <h2><i class="fa-solid fa-boxes-stacked" style="color: #176b3a;"></i> Sebaran Stok Fisik</h2>
+            <p>Persediaan produk di kantor dan chanel toko.</p>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Lokasi Penyimpanan</th>
+                    <th>Tipe Lokasi</th>
+                    <th>Jumlah Stok</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Kantor Rumah BUMN</strong></td>
+                    <td><span class="badge badge-info">Pusat / Kantor</span></td>
+                    <td><strong style="font-size: 15px; color: #176b3a;">{{ stok.stok_kantor }} unit</strong></td>
+                    <td>
+                        {% if stok.stok_kantor == 0 %}
+                            <span class="badge badge-danger">Habis</span>
+                        {% elif stok.stok_kantor <= produk.stok_minimum %}
+                            <span class="badge badge-warning">Menipis</span>
+                        {% else %}
+                            <span class="badge badge-success">Aman</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% for sc in stok_per_chanel %}
+                <tr>
+                    <td><strong>{{ sc.chanel.nama_toko }}</strong></td>
+                    <td><span class="badge badge-info">Chanel / Toko</span></td>
+                    <td><strong>{{ sc.jumlah }} unit</strong></td>
+                    <td><span class="badge badge-success">Tersedia</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- RIWAYAT TRANSAKSI TERAKHIR -->
+<div class="section">
+    <div class="section-header">
+        <div>
+            <h2><i class="fa-solid fa-clock-rotate-left" style="color: #176b3a;"></i> Riwayat Pergerakan Stok</h2>
+            <p>10 catatan mutasi terakhir untuk produk ini.</p>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Waktu</th>
+                    <th>Tipe Transaksi</th>
+                    <th>Jumlah</th>
+                    <th>Lokasi</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in riwayat %}
+                <tr>
+                    <td>{{ r.tanggal|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        {% if r.jenis_transaksi == 'MASUK' %}
+                            <span class="badge badge-success">Masuk</span>
+                        {% elif r.jenis_transaksi == 'KELUAR' %}
+                            <span class="badge badge-danger">Keluar</span>
+                        {% elif r.jenis_transaksi == 'DISTRIBUSI' %}
+                            <span class="badge badge-info">Distribusi</span>
+                        {% else %}
+                            <span class="badge badge-warning">Penyesuaian</span>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ r.jumlah }}</strong></td>
+                    <td>{{ r.lokasi }}</td>
+                    <td>{{ r.keterangan|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="empty">Belum ada riwayat pergerakan stok untuk produk ini.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

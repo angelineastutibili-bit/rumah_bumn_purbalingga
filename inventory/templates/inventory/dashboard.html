@@ -1,0 +1,940 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_head %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ===========================
+   DASHBOARD WELCOME BANNER
+=========================== */
+.welcome-banner {
+    background: linear-gradient(135deg, #203b85 0%, #0e88aa 100%);
+    border-radius: 16px;
+    padding: 28px 32px;
+    color: white;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.06);
+}
+
+.welcome-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -50px;
+    right: 120px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.04);
+}
+
+.welcome-banner-text h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.welcome-banner-text p {
+    font-size: 14px;
+    color: rgba(255,255,255,.78);
+    line-height: 1.5;
+}
+
+.welcome-banner-icon {
+    width: 68px;
+    height: 68px;
+    background: rgba(255,255,255,.12);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    color: #ffffff;
+    flex-shrink: 0;
+    z-index: 1;
+}
+
+/* ===========================
+   STAT CARDS
+=========================== */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid #eaeeea;
+    box-shadow: 0 2px 10px rgba(30, 70, 45, .05);
+    padding: 20px 20px 16px;
+    transition: transform .2s ease, box-shadow .2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(30, 70, 45, .10);
+}
+
+.stat-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+}
+
+.stat-card-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: #7a8980;
+}
+
+.stat-card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.icon-produk  { background: #eef2ff; color: #4776c5; }
+.icon-umkm    { background: #ecfdf5; color: #0f9d58; }
+.icon-kantor  { background: #fffbeb; color: #d97706; }
+.icon-chanel  { background: #f5f3ff; color: #7c3aed; }
+
+.stat-card-number {
+    font-size: 34px;
+    font-weight: 800;
+    color: #1a3828;
+    line-height: 1.1;
+    margin-bottom: 6px;
+}
+
+.stat-card-info {
+    font-size: 12px;
+    color: #96a49b;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* ===========================
+   CHART + LOW STOCK ROW
+=========================== */
+.dashboard-row {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 18px;
+    margin-bottom: 24px;
+    align-items: start;
+}
+
+.dash-card {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid #eaeeea;
+    box-shadow: 0 2px 10px rgba(30, 70, 45, .04);
+    padding: 22px 22px 18px;
+}
+
+.dash-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.dash-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a3828;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.dash-card-title .dash-card-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: #e6f7ec;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #176b3a;
+}
+
+.dash-link {
+    font-size: 12px;
+    color: #176b3a;
+    text-decoration: none;
+    font-weight: 600;
+    background: #e6f7ec;
+    padding: 5px 10px;
+    border-radius: 7px;
+    border: 1px solid #ccebda;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.dash-link:hover {
+    background: #176b3a;
+    color: white;
+    border-color: #176b3a;
+}
+
+/* Low stock table */
+.low-stock-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.low-stock-table th {
+    background: #f7faf8;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: #64746b;
+    padding: 9px 12px;
+    border-bottom: 2px solid #edf1ee;
+    text-align: left;
+}
+
+.low-stock-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #f0f3f0;
+    vertical-align: middle;
+}
+
+.low-stock-table tr:last-child td { border-bottom: none; }
+
+.low-stock-table tr:hover td { background: #fafcfb; }
+
+.stock-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stock-num {
+    font-weight: 700;
+    font-size: 13px;
+    min-width: 24px;
+}
+
+.stock-num.habis { color: #c0392b; }
+.stock-num.menipis { color: #b76e00; }
+
+.stock-badge-habis {
+    background: #fde8e7;
+    color: #c0392b;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+}
+
+.stock-badge-menipis {
+    background: #fff4e5;
+    color: #b76e00;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+}
+
+/* ===========================
+   HISTORY SECTION (3 columns)
+=========================== */
+.history-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+}
+
+.history-table th {
+    background: #f7faf8;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: #64746b;
+    padding: 8px 10px;
+    border-bottom: 2px solid #edf1ee;
+    text-align: left;
+}
+
+.history-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f0f3f0;
+    vertical-align: middle;
+    color: #2c3e34;
+}
+
+.history-table tr:last-child td { border-bottom: none; }
+.history-table tr:hover td { background: #fafcfb; }
+
+.history-table .no-col {
+    color: #96a49b;
+    font-size: 11px;
+    text-align: center;
+    width: 28px;
+}
+
+.hist-produk-name {
+    font-weight: 600;
+    color: #1a3828;
+    font-size: 12.5px;
+}
+
+.hist-jumlah-masuk {
+    font-weight: 700;
+    color: #176b3a;
+    font-size: 12.5px;
+}
+
+.hist-jumlah-keluar {
+    font-weight: 700;
+    color: #c0392b;
+    font-size: 12.5px;
+}
+
+.hist-jumlah-dist {
+    font-weight: 700;
+    color: #7c3aed;
+    font-size: 12.5px;
+}
+
+.hist-date {
+    font-size: 11.5px;
+    color: #8a9a8f;
+}
+
+.hist-chanel {
+    font-size: 12px;
+    color: #64746b;
+}
+
+.empty-row td {
+    text-align: center;
+    padding: 22px;
+    color: #aab6b0;
+    font-style: italic;
+    font-size: 12.5px;
+}
+
+.empty {
+    text-align: center;
+}
+
+.empty i {
+    display: block;
+    font-size: 20px;
+    margin-bottom: 6px;
+    color: #c8d6cc;
+}
+
+.empty p {
+    text-align: center;
+    margin: 8px 0;
+    color: #96a49b;
+}
+
+/* Quick action buttons */
+.quick-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+@media (max-width: 1200px) {
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .dashboard-row { grid-template-columns: 1fr; }
+    .history-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+    .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .welcome-banner { padding: 20px 20px; }
+    .welcome-banner-text h2 { font-size: 18px; }
+    .welcome-banner-icon { display: none; }
+    .stat-card-number { font-size: 28px; }
+}
+
+@media (max-width: 420px) {
+    .stat-grid { grid-template-columns: 1fr; }
+}
+
+/* ===========================
+   GRAFIK PERGERAKAN STOK
+=========================== */
+.chart-periode-btns {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-periode {
+    padding: 5px 13px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 7px;
+    border: 1.5px solid #ccebda;
+    background: #f4faf7;
+    color: #176b3a;
+    cursor: pointer;
+    transition: all .15s ease;
+    letter-spacing: .3px;
+}
+
+.btn-periode:hover {
+    background: #d6f0e4;
+    border-color: #a3d9bb;
+}
+
+.btn-periode.active {
+    background: #176b3a;
+    color: #ffffff;
+    border-color: #176b3a;
+    box-shadow: 0 2px 8px rgba(23, 107, 58, .25);
+}
+
+.chart-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 220px;
+    color: #96a49b;
+    font-size: 13px;
+    gap: 10px;
+}
+
+.chart-empty {
+    display: none;
+    text-align: center;
+    padding: 40px 0;
+}
+
+.chart-empty i {
+    font-size: 32px;
+    color: #c8d6cc;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.chart-empty p {
+    color: #96a49b;
+    font-size: 13px;
+    margin: 0;
+}
+</style>
+{% endblock %}
+
+{% block header %}{% endblock %}
+
+{% block content %}
+
+<!-- WELCOME BANNER -->
+<div class="welcome-banner">
+    <div class="welcome-banner-text">
+        <h2>Selamat Datang, {{ request.user.username }}! 👋</h2>
+        <p>Di Sistem Inventory dan Distribusi Produk UMKM Rumah BUMN Purbalingga</p>
+    </div>
+    <div class="welcome-banner-icon">
+        <i class="fa-solid fa-warehouse"></i>
+    </div>
+</div>
+
+<!-- STAT CARDS -->
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-card-top">
+            <div class="stat-card-label">Total Produk</div>
+            <div class="stat-card-icon icon-produk"><i class="fa-solid fa-box"></i></div>
+        </div>
+        <div class="stat-card-number">{{ total_produk }}</div>
+        <div class="stat-card-info"><i class="fa-solid fa-circle-check" style="color:#0f9d58;font-size:11px;"></i> Produk aktif terdaftar</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-top">
+            <div class="stat-card-label">Total UMKM</div>
+            <div class="stat-card-icon icon-umkm"><i class="fa-solid fa-store"></i></div>
+        </div>
+        <div class="stat-card-number">{{ total_umkm }}</div>
+        <div class="stat-card-info"><i class="fa-solid fa-circle-check" style="color:#0f9d58;font-size:11px;"></i> Mitra UMKM terdaftar</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-top">
+            <div class="stat-card-label">Stok Kantor</div>
+            <div class="stat-card-icon icon-kantor"><i class="fa-solid fa-warehouse"></i></div>
+        </div>
+        <div class="stat-card-number">{{ stok_kantor }}</div>
+        <div class="stat-card-info"><i class="fa-solid fa-building" style="color:#d97706;font-size:11px;"></i> Total unit di kantor</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-top">
+            <div class="stat-card-label">Stok Chanel</div>
+            <div class="stat-card-icon icon-chanel"><i class="fa-solid fa-shop"></i></div>
+        </div>
+        <div class="stat-card-number">{{ stok_chanel }}</div>
+        <div class="stat-card-info"><i class="fa-solid fa-shop" style="color:#7c3aed;font-size:11px;"></i> Total unit di chanel/toko</div>
+    </div>
+</div>
+
+<!-- QUICK ACTIONS -->
+<div class="quick-actions">
+    <a href="{% url 'tambah_distribusi' %}" class="btn btn-primary">
+        <i class="fa-solid fa-truck"></i> + Distribusi Stok
+    </a>
+    <a href="{% url 'tambah_barang_masuk' %}" class="btn btn-secondary">
+        <i class="fa-solid fa-box-open"></i> + Barang Masuk
+    </a>
+    <a href="{% url 'tambah_barang_keluar' %}" class="btn btn-secondary">
+        <i class="fa-solid fa-dolly"></i> + Barang Keluar
+    </a>
+    <a href="{% url 'tambah_produk' %}" class="btn btn-secondary">
+        <i class="fa-solid fa-plus"></i> + Produk Baru
+    </a>
+</div>
+
+<!-- GRAFIK PERGERAKAN STOK + STOK MENIPIS -->
+<div class="dashboard-row">
+
+    <!-- GRAFIK PERGERAKAN STOK -->
+    <div class="dash-card">
+        <div class="dash-card-header">
+            <div class="dash-card-title">
+                <div class="dash-card-icon"><i class="fa-solid fa-chart-line"></i></div>
+                Grafik Pergerakan Stok Produk
+            </div>
+            <!-- Tombol Periode -->
+            <div class="chart-periode-btns">
+                <button class="btn-periode" data-periode="harian">Harian</button>
+                <button class="btn-periode active" data-periode="bulanan">Bulanan</button>
+                <button class="btn-periode" data-periode="tahunan">Tahunan</button>
+            </div>
+        </div>
+
+        <!-- Loading state -->
+        <div class="chart-loading" id="chartLoading">
+            <i class="fa-solid fa-spinner fa-spin" style="color:#176b3a;"></i>
+            Memuat data grafik...
+        </div>
+
+        <!-- Empty state -->
+        <div class="chart-empty" id="chartEmpty">
+            <i class="fa-solid fa-chart-line"></i>
+            <p>Belum ada data transaksi untuk ditampilkan pada grafik.</p>
+            <p style="font-size:12px; margin-top:6px; color:#b0bcb5;">Tambahkan transaksi Barang Masuk, Barang Keluar, atau Distribusi untuk melihat grafik.</p>
+        </div>
+
+        <!-- Canvas grafik -->
+        <canvas id="pergerakanChart" style="max-height: 280px; display: none;"></canvas>
+    </div>
+
+    <!-- STOK MENIPIS -->
+    <div class="dash-card">
+        <div class="dash-card-header">
+            <div class="dash-card-title">
+                <div class="dash-card-icon" style="background:#fff4e5; color:#d97706;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                Stok Menipis
+            </div>
+            <a href="{% url 'data_stok' %}" class="dash-link">
+                <i class="fa-solid fa-arrow-right"></i> Lihat Semua
+            </a>
+        </div>
+
+        {% if produk_stok_rendah|length %}
+        <table class="low-stock-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Produk</th>
+                    <th>Stok</th>
+                    <th>Min</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in produk_stok_rendah %}
+                <tr>
+                    <td style="color:#96a49b; font-size:11px; text-align:center;">{{ forloop.counter }}</td>
+                    <td>
+                        <div style="font-weight:600; font-size:12.5px; color:#1a3828;">{{ item.produk.nama_produk }}</div>
+                    </td>
+                    <td>
+                        <div class="stock-bar-wrap">
+                            {% if item.stok_kantor == 0 %}
+                            <span class="stock-num habis">0</span>
+                            <span class="stock-badge-habis">Habis</span>
+                            {% else %}
+                            <span class="stock-num menipis">{{ item.stok_kantor }}</span>
+                            <span class="stock-badge-menipis">Tipis</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td style="font-size:12.5px; color:#64746b;">{{ item.produk.stok_minimum }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty" style="padding: 30px 0;">
+            <i class="fa-solid fa-circle-check" style="color:#176b3a; font-size: 28px; display: block;"></i>
+            <p style="color:#176b3a; font-weight:600; font-size:13px; margin-top:8px; text-align: center;">Semua stok aman!</p>
+            <p style="font-size:12px; color:#96a49b; text-align: center;">Tidak ada produk yang stoknya di bawah minimum.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- 3 TABEL RIWAYAT -->
+<div class="history-grid">
+
+    <!-- BARANG MASUK TERBARU -->
+    <div class="dash-card" style="padding-bottom: 16px;">
+        <div class="dash-card-header">
+            <div class="dash-card-title">
+                <div class="dash-card-icon" style="background:#ecfdf5; color:#0f9d58;">
+                    <i class="fa-solid fa-arrow-down-to-bracket"></i>
+                </div>
+                Barang Masuk Terbaru
+            </div>
+            <a href="{% url 'data_barang_masuk' %}" class="dash-link">
+                <i class="fa-solid fa-arrow-right"></i> Lihat Semua
+            </a>
+        </div>
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th class="no-col">No</th>
+                    <th>Produk</th>
+                    <th>Jml</th>
+                    <th>Tanggal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in riwayat_masuk %}
+                <tr>
+                    <td class="no-col">{{ forloop.counter }}</td>
+                    <td><div class="hist-produk-name">{{ item.produk.nama_produk|truncatechars:22 }}</div></td>
+                    <td><span class="hist-jumlah-masuk">+{{ item.jumlah }}</span></td>
+                    <td><span class="hist-date">{{ item.tanggal|date:"d/m/Y" }}</span></td>
+                </tr>
+                {% empty %}
+                <tr class="empty-row">
+                    <td colspan="4"><i class="fa-regular fa-folder-open" style="display: block; font-size: 20px; margin-bottom: 8px; color: #c8d6cc;"></i><span style="display: block; margin-top: 4px;">Belum ada data</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- BARANG KELUAR TERBARU -->
+    <div class="dash-card" style="padding-bottom: 16px;">
+        <div class="dash-card-header">
+            <div class="dash-card-title">
+                <div class="dash-card-icon" style="background:#fde8e7; color:#c0392b;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                </div>
+                Barang Keluar Terbaru
+            </div>
+            <a href="{% url 'data_barang_keluar' %}" class="dash-link">
+                <i class="fa-solid fa-arrow-right"></i> Lihat Semua
+            </a>
+        </div>
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th class="no-col">No</th>
+                    <th>Produk</th>
+                    <th>Jml</th>
+                    <th>Tanggal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in riwayat_keluar %}
+                <tr>
+                    <td class="no-col">{{ forloop.counter }}</td>
+                    <td><div class="hist-produk-name">{{ item.produk.nama_produk|truncatechars:22 }}</div></td>
+                    <td><span class="hist-jumlah-keluar">-{{ item.jumlah }}</span></td>
+                    <td><span class="hist-date">{{ item.tanggal|date:"d/m/Y" }}</span></td>
+                </tr>
+                {% empty %}
+                <tr class="empty-row">
+                    <td colspan="4"><i class="fa-regular fa-folder-open" style="display: block; font-size: 20px; margin-bottom: 8px; color: #c8d6cc;"></i><span style="display: block; margin-top: 4px;">Belum ada data</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- DISTRIBUSI TERBARU -->
+    <div class="dash-card" style="padding-bottom: 16px;">
+        <div class="dash-card-header">
+            <div class="dash-card-title">
+                <div class="dash-card-icon" style="background:#f5f3ff; color:#7c3aed;">
+                    <i class="fa-solid fa-truck"></i>
+                </div>
+                Distribusi Terbaru
+            </div>
+            <a href="{% url 'data_distribusi' %}" class="dash-link">
+                <i class="fa-solid fa-arrow-right"></i> Lihat Semua
+            </a>
+        </div>
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th class="no-col">No</th>
+                    <th>Produk</th>
+                    <th>Chanel</th>
+                    <th>Jml</th>
+                    <th>Tgl</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in riwayat_distribusi %}
+                <tr>
+                    <td class="no-col">{{ forloop.counter }}</td>
+                    <td><div class="hist-produk-name">{{ item.produk.nama_produk|truncatechars:16 }}</div></td>
+                    <td><span class="hist-chanel">{{ item.chanel.nama_toko|default:item.tujuan|default:"-"|truncatechars:14 }}</span></td>
+                    <td><span class="hist-jumlah-dist">{{ item.jumlah }}</span></td>
+                    <td><span class="hist-date">{{ item.tanggal|date:"d/m" }}</span></td>
+                </tr>
+                {% empty %}
+                <tr class="empty-row">
+                    <td colspan="5"><i class="fa-regular fa-folder-open" style="display: block; font-size: 20px; margin-bottom: 8px; color: #c8d6cc;"></i><span style="display: block; margin-top: 4px;">Belum ada data</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    'use strict';
+
+    var apiUrl   = "{% url 'api_grafik_pergerakan_stok' %}";
+    var chartObj = null;
+    var periodeAktif = 'bulanan';
+
+    var elCanvas  = document.getElementById('pergerakanChart');
+    var elLoading = document.getElementById('chartLoading');
+    var elEmpty   = document.getElementById('chartEmpty');
+
+    function showLoading() {
+        elLoading.style.display = 'flex';
+        elEmpty.style.display   = 'none';
+        elCanvas.style.display  = 'none';
+    }
+
+    function showEmpty() {
+        elLoading.style.display = 'none';
+        elEmpty.style.display   = 'block';
+        elCanvas.style.display  = 'none';
+    }
+
+    function showChart() {
+        elLoading.style.display = 'none';
+        elEmpty.style.display   = 'none';
+        elCanvas.style.display  = 'block';
+    }
+
+    function muatGrafik(periode) {
+        showLoading();
+
+        fetch(apiUrl + '?periode=' + periode, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(res) {
+            if (!res.ok) throw new Error('Network response was not ok');
+            return res.json();
+        })
+        .then(function(data) {
+            if (!data.has_data) {
+                showEmpty();
+                return;
+            }
+            showChart();
+            renderGrafik(data.labels, data.stok_masuk, data.stok_keluar, data.distribusi);
+        })
+        .catch(function(err) {
+            console.error('Gagal memuat data grafik:', err);
+            showEmpty();
+        });
+    }
+
+    function renderGrafik(labels, dataMasuk, dataKeluar, dataDistribusi) {
+        if (chartObj) {
+            chartObj.destroy();
+            chartObj = null;
+        }
+
+        chartObj = new Chart(elCanvas, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Stok Masuk',
+                        data: dataMasuk,
+                        backgroundColor: 'rgba(23, 107, 58, 0.78)',
+                        borderColor: '#176b3a',
+                        borderWidth: 1.5,
+                        borderRadius: 5,
+                        borderSkipped: false,
+                        order: 1,
+                    },
+                    {
+                        label: 'Stok Keluar',
+                        data: dataKeluar,
+                        backgroundColor: 'rgba(192, 57, 43, 0.75)',
+                        borderColor: '#c0392b',
+                        borderWidth: 1.5,
+                        borderRadius: 5,
+                        borderSkipped: false,
+                        order: 2,
+                    },
+                    {
+                        label: 'Distribusi ke Chanel',
+                        data: dataDistribusi,
+                        backgroundColor: 'rgba(124, 58, 237, 0.70)',
+                        borderColor: '#7c3aed',
+                        borderWidth: 1.5,
+                        borderRadius: 5,
+                        borderSkipped: false,
+                        order: 3,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: { size: 12, family: "'Segoe UI', sans-serif" },
+                            padding: 16,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#1a3828',
+                        titleFont: { size: 12, weight: 'bold' },
+                        bodyFont: { size: 12 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                return '  ' + context.dataset.label + ': ' + context.parsed.y + ' unit';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { size: 11 },
+                            color: '#64746b',
+                            maxRotation: 45,
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,.05)' },
+                        ticks: {
+                            font: { size: 11 },
+                            color: '#64746b',
+                            stepSize: 1,
+                            callback: function(v) {
+                                return Number.isInteger(v) ? v : null;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Event listener tombol periode
+    document.querySelectorAll('.btn-periode').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var periode = this.getAttribute('data-periode');
+            if (periode === periodeAktif) return;
+
+            periodeAktif = periode;
+
+            // Update active state tombol
+            document.querySelectorAll('.btn-periode').forEach(function(b) {
+                b.classList.remove('active');
+            });
+            this.classList.add('active');
+
+            muatGrafik(periode);
+        });
+    });
+
+    // Muat grafik pertama kali (bulanan sebagai default)
+    muatGrafik(periodeAktif);
+
+})();
+</script>
+{% endblock %}

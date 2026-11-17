@@ -1,0 +1,63 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Tambah Stok | {{ chanel.nama_toko }}{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Tambah Stok Toko</h1>
+        <p>Tambahkan persediaan produk ke chanel {{ chanel.nama_toko }}.</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-boxes-packing"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <div class="section-header" style="margin-bottom: 25px;">
+        <div>
+            <h2>Form Penambahan Stok di {{ chanel.nama_toko }}</h2>
+            <p>Pilih produk dan masukkan jumlah stok yang masuk ke toko ini.</p>
+        </div>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="produk">Produk *</label>
+            <select name="produk" id="produk" required>
+                <option value="">-- Pilih Produk --</option>
+                {% for item in produk %}
+                <option value="{{ item.id }}">
+                    {{ item.kode_produk }} - {{ item.nama_produk }} ({{ item.umkm.nama|default:"-" }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="jumlah">Jumlah Stok *</label>
+            <input
+                type="number"
+                name="jumlah"
+                id="jumlah"
+                min="1"
+                placeholder="Contoh: 10"
+                required
+            >
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Stok
+            </button>
+            <a href="{% url 'detail_chanel' chanel.id %}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Batal
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

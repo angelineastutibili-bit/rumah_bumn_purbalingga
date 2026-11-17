@@ -1,0 +1,295 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Chanel & Toko{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Chanel / Toko</h1>
+        <p>Kelola stok produk di seluruh chanel dan toko</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-shop"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .chanel-tabs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        border-bottom: 2px solid #e9eee9;
+        padding-bottom: 0;
+    }
+
+    .chanel-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 12px 18px;
+        background: transparent;
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #64746b;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+
+    .chanel-tab:hover {
+        color: #176b3a;
+        border-bottom-color: #176b3a;
+    }
+
+    .chanel-tab.active {
+        color: #176b3a;
+        border-bottom-color: #176b3a;
+    }
+
+    .chanel-tabs-wrapper {
+        overflow-x: auto;
+        margin-bottom: 24px;
+    }
+
+    .chanel-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+        margin-top: 15px;
+    }
+
+    .chanel-card {
+        background: #ffffff;
+        border: 1px solid #e9eee9;
+        border-radius: 14px;
+        padding: 22px;
+        box-shadow: 0 2px 12px rgba(30, 70, 45, .04);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .chanel-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(30, 70, 45, .08);
+    }
+
+    .chanel-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: #e8f4ec;
+        color: #176b3a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        margin-bottom: 14px;
+    }
+
+    .chanel-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1c3828;
+        margin-bottom: 8px;
+    }
+
+    .chanel-meta {
+        color: #6d7d74;
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 18px;
+    }
+
+    .chanel-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        padding-top: 15px;
+        border-top: 1px solid #f0f4f1;
+    }
+
+    .btn-detail {
+        flex: 1;
+        padding: 8px 12px;
+        background: #e8f4ec;
+        color: #176b3a;
+        border: none;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all .2s ease;
+    }
+
+    .btn-detail:hover {
+        background: #176b3a;
+        color: white;
+    }
+
+    .btn-hapus {
+        padding: 8px 12px;
+        background: #fde8e7;
+        color: #c0392b;
+        border: none;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all .2s ease;
+    }
+
+    .btn-hapus:hover {
+        background: #c0392b;
+        color: white;
+    }
+
+    .empty {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    .empty i {
+        font-size: 48px;
+        color: #d6dcd9;
+        display: block;
+        margin-bottom: 12px;
+    }
+
+    .empty p {
+        font-size: 16px;
+        color: #64746b;
+        margin: 0 0 8px 0;
+    }
+
+    .empty small {
+        color: #aab6b0;
+        font-size: 12px;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1c3828;
+        margin: 0;
+    }
+
+    .section-subtitle {
+        font-size: 13px;
+        color: #64746b;
+        margin: 4px 0 0 0;
+    }
+</style>
+
+<!-- TAB NAVIGATION -->
+<div class="chanel-tabs-wrapper">
+    <div class="chanel-tabs">
+        <!-- Seluruh Bazar Tab -->
+        <a href="{% url 'chanel_seluruh_bazar' %}" class="chanel-tab">
+            <i class="fa-solid fa-chart-pie"></i> Seluruh Bazar
+        </a>
+
+        <!-- Individual Chanel Tabs -->
+        {% for chanel in chanel %}
+        <a href="{% url 'detail_chanel' chanel.id %}" class="chanel-tab">
+            <i class="fa-solid fa-shop"></i> {{ chanel.nama_toko }}
+        </a>
+        {% endfor %}
+
+        <!-- Tambah Chanel Tab -->
+        <a href="{% url 'tambah_chanel' %}" class="chanel-tab" style="margin-left: auto;">
+            <i class="fa-solid fa-plus"></i> Tambah Chanel/Toko
+        </a>
+    </div>
+</div>
+
+<!-- CONTENT -->
+<div class="section">
+    <div class="section-header">
+        <div>
+            <p class="section-title">Daftar Chanel / Toko</p>
+            <p class="section-subtitle">Pilih toko untuk mengelola stok produknya</p>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <a href="{% url 'tambah_chanel' %}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Tambah Chanel/Toko
+            </a>
+            <button type="button" class="btn btn-hapus-semua" onclick="bukaModalHapusSemua('{% url 'hapus_semua_data' 'chanel' %}', 'Channel / Toko', {{ chanel|length }})">
+                <i class="fa-solid fa-trash-can"></i> Hapus Semua Data
+            </button>
+        </div>
+    </div>
+
+    <div class="chanel-grid">
+        {% for toko in chanel %}
+        <div class="chanel-card">
+            <div>
+                <div class="chanel-icon">
+                    <i class="fa-solid fa-shop"></i>
+                </div>
+                <h3 class="chanel-title">{{ toko.nama_toko }}</h3>
+                <div class="chanel-meta">
+                    <p style="margin-bottom: 4px;">
+                        <i class="fa-solid fa-location-dot" style="color: #176b3a; width: 16px;"></i>
+                        <strong>Lokasi:</strong> {{ toko.lokasi|default:"Belum diisi" }}
+                    </p>
+                    <p style="margin-bottom: 4px;">
+                        <i class="fa-solid fa-boxes-stacked" style="color: #176b3a; width: 16px;"></i>
+                        <strong>Total Stok:</strong> {{ toko.total_stok }} unit
+                    </p>
+                    <p style="margin-bottom: 0;">
+                        <i class="fa-solid fa-info-circle" style="color: #89958d; width: 16px;"></i>
+                        {{ toko.keterangan|default:"Tidak ada keterangan." }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="chanel-actions">
+                <a href="{% url 'detail_chanel' toko.id %}" class="btn-detail">
+                    <i class="fa-solid fa-boxes-stacked"></i> Lihat Stok
+                </a>
+                <a href="{% url 'edit_chanel' toko.id %}" class="btn-hapus" title="Edit Toko" style="background: #fff4e5; color: #d97706;">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+                <a href="{% url 'hapus_chanel' toko.id %}" class="btn-hapus" title="Hapus Toko">
+                    <i class="fa-solid fa-trash"></i>
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty">
+            <i class="fa-solid fa-store-slash"></i>
+            <p>Belum ada data toko atau chanel yang terdaftar.</p>
+            <small>Klik tombol "Tambah Chanel/Toko" untuk menambahkan toko mitra.</small>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

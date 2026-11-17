@@ -1,0 +1,286 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Seluruh Bazar - Rekap Stok{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Chanel / Toko</h1>
+        <p>Kelola stok produk di seluruh chanel dan toko</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-shop"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .chanel-tabs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        border-bottom: 2px solid #e9eee9;
+        padding-bottom: 0;
+    }
+
+    .chanel-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 12px 18px;
+        background: transparent;
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #64746b;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .2s ease;
+        transition: color .2s, border-color .2s;
+    }
+
+    .chanel-tab:hover {
+        color: #176b3a;
+        border-bottom-color: #176b3a;
+    }
+
+    .chanel-tab.active {
+        color: #176b3a;
+        border-bottom-color: #176b3a;
+    }
+
+    .chanel-tabs-wrapper {
+        overflow-x: auto;
+    }
+
+    .tab-content {
+        background: #ffffff;
+        border-radius: 14px;
+        border: 1px solid #e9eee9;
+        padding: 28px;
+        box-shadow: 0 2px 10px rgba(30, 70, 45, .04);
+    }
+
+    .stat-cards-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #f5f7f6 0%, #ffffff 100%);
+        border: 1px solid #e9eee9;
+        border-radius: 12px;
+        padding: 18px;
+        text-align: center;
+    }
+
+    .stat-card-value {
+        font-size: 32px;
+        font-weight: 800;
+        color: #176b3a;
+        margin-bottom: 6px;
+    }
+
+    .stat-card-label {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: #64746b;
+        letter-spacing: 0.5px;
+    }
+
+    .stok-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        margin-top: 14px;
+    }
+
+    .stok-table th {
+        background: #f7faf8;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #64746b;
+        padding: 12px;
+        border-bottom: 2px solid #e9eee9;
+        text-align: left;
+        letter-spacing: 0.3px;
+    }
+
+    .stok-table td {
+        padding: 12px;
+        border-bottom: 1px solid #f0f3f0;
+        vertical-align: middle;
+    }
+
+    .stok-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .stok-table tr:hover td {
+        background: #fafcfb;
+    }
+
+    .stok-no {
+        text-align: center;
+        color: #96a49b;
+        font-size: 12px;
+        width: 30px;
+    }
+
+    .stok-produk-nama {
+        font-weight: 600;
+        color: #1c3828;
+    }
+
+    .stok-produk-kode {
+        font-size: 11px;
+        color: #96a49b;
+        margin-top: 2px;
+    }
+
+    .stok-total {
+        font-weight: 700;
+        color: #176b3a;
+        text-align: right;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #96a49b;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        color: #d6dcd9;
+        display: block;
+        margin-bottom: 12px;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 16px;
+        color: #64746b;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #e9eee9;
+    }
+</style>
+
+<!-- TAB NAVIGATION -->
+<div class="chanel-tabs-wrapper">
+    <div class="chanel-tabs">
+        <!-- Seluruh Bazar Tab -->
+        <a href="{% url 'chanel_seluruh_bazar' %}" class="chanel-tab active">
+            <i class="fa-solid fa-chart-pie"></i> Seluruh Bazar
+        </a>
+
+        <!-- Individual Chanel Tabs -->
+        {% for chanel in chanel_list %}
+        <a href="{% url 'detail_chanel' chanel.id %}" class="chanel-tab">
+            <i class="fa-solid fa-shop"></i> {{ chanel.nama_toko }}
+        </a>
+        {% endfor %}
+
+        <!-- Tambah Chanel Tab -->
+        <a href="{% url 'tambah_chanel' %}" class="chanel-tab" style="margin-left: auto;">
+            <i class="fa-solid fa-plus"></i> Tambah Chanel/Toko
+        </a>
+    </div>
+</div>
+
+<!-- TAB CONTENT: SELURUH BAZAR RECAP -->
+<div class="tab-content">
+    <div style="margin-bottom: 24px;">
+        <h2 style="font-size: 20px; font-weight: 700; color: #1c3828; margin-bottom: 4px;">Seluruh Bazar</h2>
+        <p style="color: #64746b; font-size: 13px; margin: 0;">Rekap otomatis stok produk dari seluruh toko</p>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-cards-row">
+        <div class="stat-card">
+            <div class="stat-card-value">{{ total_produk }}</div>
+            <div class="stat-card-label">Total Produk</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-value">{{ total_umkm }}</div>
+            <div class="stat-card-label">Total UMKM</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-value">{{ total_stok }}</div>
+            <div class="stat-card-label">Total Stok</div>
+        </div>
+    </div>
+
+    {% if stok %}
+    <!-- STOK TABLE -->
+    <table class="stok-table">
+        <thead>
+            <tr>
+                <th class="stok-no">No</th>
+                <th>Kode Produk</th>
+                <th>Nama Produk</th>
+                <th>UMKM/Pemilik</th>
+                <th>Kategori</th>
+                <th class="stok-total">Stok Total</th>
+                <th style="text-align: right;">Harga Jual</th>
+                <th style="text-align: center; width: 80px;">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in stok %}
+            <tr>
+                <td class="stok-no">{{ forloop.counter }}</td>
+                <td>{{ item.produk.kode_produk }}</td>
+                <td>
+                    <div class="stok-produk-nama">{{ item.produk.nama_produk }}</div>
+                    {% if item.produk.keterangan %}
+                    <div class="stok-produk-kode" style="font-size: 11px; max-width: 200px;">{{ item.produk.keterangan|truncatewords:5 }}</div>
+                    {% endif %}
+                </td>
+                <td>{{ item.produk.umkm.nama|default:item.produk.nama_pemilik|default:"-" }}</td>
+                <td>{{ item.produk.kategori|default:"-" }}</td>
+                <td class="stok-total">{{ item.stok_total }} unit</td>
+                <td style="text-align: right;">Rp{{ item.produk.harga_jual|floatformat:0|default:"-" }}</td>
+                <td style="text-align: center;">
+                    <a href="{% url 'detail_produk' item.produk.id %}" title="Lihat Detail" style="color: #176b3a; text-decoration: none;">
+                        <i class="fa-solid fa-eye"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="action-buttons">
+        <small style="color: #96a49b;">
+            <i class="fa-solid fa-info-circle"></i>
+            "Seluruh Bazar" adalah rekap otomatis dari semua toko. Data diperbarui realtime saat ada perubahan stok toko.
+        </small>
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <i class="fa-solid fa-inbox"></i>
+        <p>Belum ada data produk di toko manapun.</p>
+        <small style="color: #a5b8af; display: block; margin-top: 8px;">Tambahkan stok produk ke salah satu toko untuk melihat rekapnya di sini.</small>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

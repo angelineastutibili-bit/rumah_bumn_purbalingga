@@ -1,0 +1,83 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Edit UMKM - {{ umkm.nama }}{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Edit Mitra UMKM</h1>
+        <p>Perbarui profil dan kontak mitra {{ umkm.nama }}.</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-pen-to-square"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <div class="section-header" style="margin-bottom: 25px;">
+        <div>
+            <h2>Formulir Edit UMKM</h2>
+            <p>Sesuaikan data profil mitra yang berubah.</p>
+        </div>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="{{ form.nama.id_for_label }}">Nama UMKM / Usaha *</label>
+                {{ form.nama }}
+                {% if form.nama.errors %}<div style="color: #c0392b; font-size: 12px; margin-top: 4px;">{{ form.nama.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.pemilik.id_for_label }}">Nama Pemilik</label>
+                {{ form.pemilik }}
+                {% if form.pemilik.errors %}<div style="color: #c0392b; font-size: 12px; margin-top: 4px;">{{ form.pemilik.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.jenis_usaha.id_for_label }}">Jenis Usaha / Kategori *</label>
+                {{ form.jenis_usaha }}
+                {% if form.jenis_usaha.errors %}<div style="color: #c0392b; font-size: 12px; margin-top: 4px;">{{ form.jenis_usaha.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.tanggal_terdaftar.id_for_label }}">
+                    Tanggal Terdaftar
+                    <span style="font-size: 11.5px; font-weight: normal; color: #7a8980;">(Histori / Manual)</span>
+                </label>
+                {{ form.tanggal_terdaftar }}
+                <small style="color: #7a8980; font-size: 11.5px; display: block; margin-top: 4px;">
+                    Dapat disesuaikan jika ingin memperbarui tanggal pendaftaran.
+                </small>
+                {% if form.tanggal_terdaftar.errors %}<div style="color: #c0392b; font-size: 12px; margin-top: 4px;">{{ form.tanggal_terdaftar.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group full-width">
+                <label for="{{ form.kontak.id_for_label }}">Nomor Telepon / WhatsApp</label>
+                {{ form.kontak }}
+                {% if form.kontak.errors %}<div style="color: #c0392b; font-size: 12px; margin-top: 4px;">{{ form.kontak.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group full-width">
+                <label for="{{ form.alamat.id_for_label }}">Alamat Usaha</label>
+                {{ form.alamat }}
+                {% if form.alamat.errors %}<div style="color: #c0392b; font-size: 12px; margin-top: 4px;">{{ form.alamat.errors }}</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
+            </button>
+            <a href="{% url 'data_umkm' %}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Batal
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,246 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Stok Kantor | Data Stok{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Stok Kantor</h1>
+        <p>Kelola dan pantau persediaan produk di Kantor dan Chanel secara real-time.</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-boxes-stacked"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="section">
+    <div class="section-header" style="margin-bottom: 20px;">
+        <div>
+            <h2>Rekap Stok Produk</h2>
+            <p>Daftar stok terkini di seluruh unit penyimpanan.</p>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <a href="{% url 'ekspor_csv' 'stok' %}" class="btn-export">
+                <i class="fa-solid fa-file-csv"></i> Ekspor CSV
+            </a>
+            <button type="button" class="btn btn-hapus-semua" onclick="bukaModalHapusSemua('{% url 'hapus_semua_data' 'stok' %}', 'Stok Kantor', {{ stok|length }})">
+                <i class="fa-solid fa-trash-can"></i> Hapus Semua Data
+            </button>
+        </div>
+    </div>
+
+    <!-- TOOLBAR & PENCARIAN REAL-TIME -->
+    <div class="toolbar" style="margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
+        <form method="GET" class="search-form" id="searchStokForm" style="flex: 1; max-width: 580px; display: flex; gap: 8px; align-items: center;">
+            <div style="position: relative; flex: 1;">
+                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #7a8980; font-size: 13px;"></i>
+                <input 
+                    type="text" 
+                    name="q" 
+                    id="searchStokInput" 
+                    value="{{ query }}" 
+                    placeholder="Cari berdasarkan Nama Produk, Kode/SKU, atau Kategori..." 
+                    class="search-input"
+                    style="padding-left: 36px; padding-right: 32px; width: 100%;"
+                    autocomplete="off"
+                >
+                {% if query %}
+                <button type="button" id="btnClearSearch" onclick="clearLiveSearch()" title="Hapus pencarian" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #7a8980; cursor: pointer; padding: 2px 4px; font-size: 14px;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary" title="Cari produk">
+                <i class="fa-solid fa-magnifying-glass"></i> Cari
+            </button>
+            {% if query %}
+            <a href="{% url 'data_stok' %}" class="btn btn-secondary" title="Reset pencarian">
+                <i class="fa-solid fa-rotate-left"></i> Reset
+            </a>
+            {% endif %}
+        </form>
+
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <div id="searchCounterBadge" style="display: none; font-size: 12.5px; padding: 6px 14px; border-radius: 20px; background: #e0f0e5; color: #176b3a; font-weight: 600;">
+                <i class="fa-solid fa-filter" style="margin-right: 5px;"></i><span id="searchCounterText"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="stokTable">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">No</th>
+                    <th>Kode Produk</th>
+                    <th>Nama Produk</th>
+                    <th>Kategori</th>
+                    <th>UMKM</th>
+                    <th>Stok Kantor</th>
+                    <th>Stok Chanel</th>
+                    <th>Total Stok</th>
+                    <th>Status</th>
+                    <th style="width: 100px;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in stok %}
+                <tr class="stok-row"
+                    data-kode="{{ item.produk.kode_produk|lower }}"
+                    data-nama="{{ item.produk.nama_produk|lower }}"
+                    data-kategori="{{ item.produk.kategori|default:''|lower }}"
+                    data-umkm="{{ item.produk.umkm.nama|default:''|lower }}">
+                    <td class="row-number">{{ forloop.counter }}</td>
+                    <td><strong>{{ item.produk.kode_produk }}</strong></td>
+                    <td><strong>{{ item.produk.nama_produk }}</strong></td>
+                    <td>
+                        <span class="badge badge-info">{{ item.produk.kategori|default:"-" }}</span>
+                    </td>
+                    <td>{{ item.produk.umkm.nama|default:"-" }}</td>
+                    <td>
+                        <strong style="color: {% if item.stok_kantor == 0 %}#c0392b{% elif item.stok_kantor <= item.produk.stok_minimum %}#e67e22{% else %}#176b3a{% endif %}; font-size: 14px;">
+                            {{ item.stok_kantor }}
+                        </strong>
+                    </td>
+                    <td>{{ item.stok_chanel }}</td>
+                    <td><strong>{{ item.stok_kantor|add:item.stok_chanel }}</strong></td>
+                    <td>
+                        {% if item.stok_kantor|add:item.stok_chanel == 0 %}
+                            <span class="badge badge-danger">Habis</span>
+                        {% elif item.stok_kantor|add:item.stok_chanel <= item.produk.stok_minimum %}
+                            <span class="badge badge-warning">Menipis</span>
+                        {% else %}
+                            <span class="badge badge-success">Aman</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="aksi">
+                            <a href="{% url 'edit_stok' item.id %}" class="btn-edit" title="Perbarui Jumlah Stok">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="empty">
+                        <i class="fa-solid fa-box-open"></i>
+                        <p>Belum ada data stok produk ditemukan.</p>
+                        {% if query %}
+                        <small>Coba gunakan kata kunci lain atau <a href="{% url 'data_stok' %}" style="color: #176b3a; font-weight: 600;">reset pencarian</a>.</small>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- JAVASCRIPT REAL-TIME LIVE SEARCH DENGAN DEBOUNCE -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchStokInput');
+    const tableBody = document.querySelector('#stokTable tbody');
+    const rows = document.querySelectorAll('.stok-row');
+    const counterBadge = document.getElementById('searchCounterBadge');
+    const counterText = document.getElementById('searchCounterText');
+
+    let debounceTimer;
+
+    function filterTable(rawQuery) {
+        const query = rawQuery.trim().toLowerCase();
+        let visibleCount = 0;
+
+        // Hapus baris pesan kosong live terdahulu jika ada
+        const existingEmpty = document.getElementById('liveEmptyRow');
+        if (existingEmpty) {
+            existingEmpty.remove();
+        }
+
+        rows.forEach(row => {
+            const kode = row.getAttribute('data-kode') || '';
+            const nama = row.getAttribute('data-nama') || '';
+            const kategori = row.getAttribute('data-kategori') || '';
+            const umkm = row.getAttribute('data-umkm') || '';
+
+            const match = !query || 
+                          kode.includes(query) || 
+                          nama.includes(query) || 
+                          kategori.includes(query) || 
+                          umkm.includes(query);
+
+            if (match) {
+                row.style.display = '';
+                visibleCount++;
+                const numCell = row.querySelector('.row-number');
+                if (numCell) {
+                    numCell.textContent = visibleCount;
+                }
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        if (query) {
+            if (counterBadge && counterText) {
+                counterBadge.style.display = 'inline-flex';
+                counterText.textContent = `${visibleCount} produk cocok`;
+            }
+
+            if (visibleCount === 0 && tableBody) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.id = 'liveEmptyRow';
+                emptyRow.innerHTML = `
+                    <td colspan="10" class="empty">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <p>Tidak ditemukan produk yang cocok dengan "<strong>${rawQuery}</strong>".</p>
+                        <small>Pencarian memeriksa <strong>Nama Produk</strong>, <strong>Kode/SKU</strong>, dan <strong>Kategori</strong>.</small>
+                    </td>
+                `;
+                tableBody.appendChild(emptyRow);
+            }
+        } else {
+            if (counterBadge) {
+                counterBadge.style.display = 'none';
+            }
+            // Kembalikan nomor baris asli
+            rows.forEach((row, idx) => {
+                const numCell = row.querySelector('.row-number');
+                if (numCell) {
+                    numCell.textContent = idx + 1;
+                }
+            });
+        }
+    }
+
+    if (searchInput) {
+        // Event input real-time dengan debounce 250ms
+        searchInput.addEventListener('input', function(e) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                filterTable(e.target.value);
+            }, 250);
+        });
+
+        // Jika saat load awal sudah ada query dari URL, sesuaikan counter
+        if (searchInput.value.trim() && rows.length > 0) {
+            if (counterBadge && counterText) {
+                counterBadge.style.display = 'inline-flex';
+                counterText.textContent = `${rows.length} produk ditemukan`;
+            }
+        }
+    }
+
+    window.clearLiveSearch = function() {
+        if (searchInput) {
+            searchInput.value = '';
+            filterTable('');
+            window.location.href = "{% url 'data_stok' %}";
+        }
+    };
+});
+</script>
+{% endblock %}

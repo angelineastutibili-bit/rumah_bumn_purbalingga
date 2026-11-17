@@ -1,0 +1,140 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Edit Produk - {{ produk.nama_produk }}{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Edit Data Produk</h1>
+        <p>Perbarui informasi produk {{ produk.nama_produk }}.</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-pen-to-square"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <div class="section-header" style="margin-bottom: 25px;">
+        <div>
+            <h2>Formulir Edit Produk</h2>
+            <p>Sesuaikan data produk di bawah ini.</p>
+        </div>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="kode_produk">Kode Produk *</label>
+                <input
+                    type="text"
+                    id="kode_produk"
+                    name="kode_produk"
+                    value="{{ produk.kode_produk }}"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="nama_produk">Nama Produk *</label>
+                <input
+                    type="text"
+                    id="nama_produk"
+                    name="nama_produk"
+                    value="{{ produk.nama_produk }}"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="nama_pemilik">Nama Pemilik *</label>
+                <input
+                    type="text"
+                    id="nama_pemilik"
+                    name="nama_pemilik"
+                    value="{{ produk.nama_pemilik }}"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="umkm">Mitra UMKM *</label>
+                <select id="umkm" name="umkm" required>
+                    <option value="">-- Pilih UMKM --</option>
+                    {% for item in umkm %}
+                    <option value="{{ item.id }}" {% if produk.umkm_id == item.id %}selected{% endif %}>{{ item.nama }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="kategori">Kategori *</label>
+                <input
+                    type="text"
+                    id="kategori"
+                    name="kategori"
+                    value="{{ produk.kategori }}"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="harga_beli">Harga Beli (Rp) *</label>
+                <input
+                    type="number"
+                    id="harga_beli"
+                    name="harga_beli"
+                    value="{{ produk.harga_beli }}"
+                    min="0"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="harga_jual">Harga Jual (Rp) *</label>
+                <input
+                    type="number"
+                    id="harga_jual"
+                    name="harga_jual"
+                    value="{{ produk.harga_jual }}"
+                    min="0"
+                    required
+                >
+            </div>
+
+            <div class="form-group full-width">
+                <label for="stok_minimum">Batas Stok Minimum *</label>
+                <input
+                    type="number"
+                    id="stok_minimum"
+                    name="stok_minimum"
+                    value="{{ produk.stok_minimum }}"
+                    min="0"
+                    required
+                >
+            </div>
+
+            <div class="form-group full-width">
+                <label for="keterangan">Keterangan Tambahan</label>
+                <textarea
+                    id="keterangan"
+                    name="keterangan"
+                    rows="4"
+                >{{ produk.keterangan }}</textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
+            </button>
+            <a href="{% url 'data_produk' %}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Batal
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

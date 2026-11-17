@@ -1,0 +1,118 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Detail UMKM - {{ umkm.nama }}{% endblock %}
+
+{% block header %}
+<div class="header">
+    <div>
+        <h1>Detail Mitra UMKM</h1>
+        <p>Profil usaha dan daftar produk mitra {{ umkm.nama }}.</p>
+    </div>
+    <div class="header-icon">
+        <i class="fa-solid fa-store"></i>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="section" style="margin-bottom: 25px;">
+    <div class="section-header">
+        <div>
+            <h2>Informasi Mitra Usaha</h2>
+            <p>Data profil dan kontak usaha.</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <a href="{% url 'edit_umkm' umkm.id %}" class="btn btn-primary">
+                <i class="fa-solid fa-pen-to-square"></i> Edit UMKM
+            </a>
+            <a href="{% url 'data_umkm' %}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Kembali
+            </a>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
+        <div style="background: #f7faf8; padding: 15px; border-radius: 10px;">
+            <span style="color: #7a8980; font-size: 12px; font-weight: 600;">NAMA USAHA</span>
+            <p style="font-size: 16px; font-weight: 700; color: #176b3a; margin-top: 4px;">{{ umkm.nama }}</p>
+        </div>
+        <div style="background: #f7faf8; padding: 15px; border-radius: 10px;">
+            <span style="color: #7a8980; font-size: 12px; font-weight: 600;">PEMILIK</span>
+            <p style="font-size: 16px; font-weight: 700; color: #26352d; margin-top: 4px;">{{ umkm.pemilik|default:"-" }}</p>
+        </div>
+        <div style="background: #f7faf8; padding: 15px; border-radius: 10px;">
+            <span style="color: #7a8980; font-size: 12px; font-weight: 600;">JENIS USAHA</span>
+            <p style="font-size: 16px; font-weight: 700; color: #26352d; margin-top: 4px;">{{ umkm.jenis_usaha }}</p>
+        </div>
+        <div style="background: #f7faf8; padding: 15px; border-radius: 10px;">
+            <span style="color: #7a8980; font-size: 12px; font-weight: 600;">TANGGAL TERDAFTAR</span>
+            <p style="font-size: 15px; font-weight: 700; color: #26352d; margin-top: 4px;">
+                <i class="fa-regular fa-calendar-days" style="color: #176b3a; margin-right: 4px;"></i>{{ umkm.tanggal_terdaftar|date:"d M Y, H:i"|default:"-" }}
+            </p>
+        </div>
+        <div style="background: #f7faf8; padding: 15px; border-radius: 10px;">
+            <span style="color: #7a8980; font-size: 12px; font-weight: 600;">KONTAK</span>
+            <p style="font-size: 16px; font-weight: 700; color: #26352d; margin-top: 4px;">{{ umkm.kontak|default:"-" }}</p>
+        </div>
+        <div style="background: #f7faf8; padding: 15px; border-radius: 10px; grid-column: 1 / -1;">
+            <span style="color: #7a8980; font-size: 12px; font-weight: 600;">ALAMAT USAHA</span>
+            <p style="font-size: 14px; color: #26352d; margin-top: 4px;">{{ umkm.alamat|default:"Belum diisi" }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- DAFTAR PRODUK MITRA INI -->
+<div class="section">
+    <div class="section-header">
+        <div>
+            <h2><i class="fa-solid fa-box" style="color: #176b3a;"></i> Daftar Produk Mitra Ini</h2>
+            <p>Semua produk yang didaftarkan oleh {{ umkm.nama }}.</p>
+        </div>
+        <a href="{% url 'tambah_produk' %}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Tambah Produk Baru
+        </a>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Kode</th>
+                    <th>Nama Produk</th>
+                    <th>Kategori</th>
+                    <th>Harga Jual</th>
+                    <th>Stok Minimum</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in produk_list %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><strong>{{ p.kode_produk }}</strong></td>
+                    <td>{{ p.nama_produk }}</td>
+                    <td><span class="badge badge-info">{{ p.kategori|default:"-" }}</span></td>
+                    <td><strong>Rp {{ p.harga_jual }}</strong></td>
+                    <td>{{ p.stok_minimum }}</td>
+                    <td>
+                        <div class="aksi">
+                            <a href="{% url 'detail_produk' p.id %}" class="btn-detail">
+                                <i class="fa-solid fa-eye"></i> Detail
+                            </a>
+                            <a href="{% url 'edit_produk' p.id %}" class="btn-edit">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="empty">Mitra ini belum memiliki produk terdaftar.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
